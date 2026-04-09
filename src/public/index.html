@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Mapa Transporte</title>
+  <style>
+    #map {
+      height: 90vh;
+      width: 100%;
+    }
+
+    #panel {
+      padding: 10px;
+      background: white;
+      position: absolute;
+      z-index: 10;
+      width: 250px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="panel">
+  <h3>Solicitar viaje</h3>
+
+  <select id="vehiculo">
+    <option value="carro">Carro</option>
+    <option value="moto">Moto</option>
+    <option value="van">Van</option>
+  </select>
+
+  <button onclick="pedirViaje()">Pedir viaje</button>
+
+  <div id="resultado" style="margin-top:10px; font-weight:bold;"></div>
+</div>
+
+<div id="map"></div>
+
+<script>
+
+function initMap() {
+
+  const origen = { lat: 5.0219, lng: -74.0047 };
+  const destino = { lat: 4.7110, lng: -74.0721 };
+
+  let conductor = { lat: 5.0285, lng: -73.9830 };
+
+  const map = new google.maps.Map(document.getElementById("map"), {
+    zoom: 9,
+    center: origen
+  });
+
+  const directionsService = new google.maps.DirectionsService();
+  const directionsRenderer = new google.maps.DirectionsRenderer();
+
+  directionsRenderer.setMap(map);
+
+  directionsService.route({
+    origin: origen,
+    destination: destino,
+    travelMode: 'DRIVING'
+  }, (result, status) => {
+    if (status === 'OK') {
+      directionsRenderer.setDirections(result);
+    }
+  });
+
+  new google.maps.Marker({
+    position: origen,
+    map: map,
+    title: "Origen"
+  });
+
+  new google.maps.Marker({
+    position: destino,
+    map: map,
+    title: "Destino"
+  });
+
+  const conductorMarker = new google.maps.Marker({
+    position: conductor,
+    map: map,
+    title: "Conductor",
+    icon: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+  });
+
+  function moverConductor() {
+    conductor.lat += (origen.lat - conductor.lat) * 0.02;
+    conductor.lng += (origen.lng - conductor.lng) * 0.02;
+
+    conductorMarker.setPosition(conductor);
+  }
+
+  setInterval(moverConductor, 1000);
+}
+
+async function pedirViaje() {
+
+  const tipoVehiculo = document.getElementById("vehiculo").value;
+
+  document.getElementById("resultado").innerHTML = "Consultando...";
+
+  try {
+
+    const response = await fetch('/api/distancia', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        origen: "5.0219,-74.0047",
+        destino: "4.7110,-74.0721",
+        tipoVehiculo: tipoVehiculo
+      })
+    });
+
+    const data = await response.json();
+
+    document.getElementById("resultado").innerHTML =
+      "Precio: " + data.precio_estimado +
+      "<br>Conductor: " + data.conductor.nombre +
+      "<br>Vehículo: " + data.conductor.tipoVehiculo;
+
+  } catch (error) {
+    document.getElementById("resultado").innerHTML =
+      "Error backend";
+  }
+}
+
+</script>
+
+<script async defer
+src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAGjC1Eo3ldxv1wWBMDMdzkfqUZPL3TDM0&callback=initMap">
+</script>
+
+</body>
+</html>

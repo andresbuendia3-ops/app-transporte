@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Historial de Viajes</title>
+</head>
+<body>
+
+<h2>Historial de Viajes</h2>
+
+<table border="1" id="tabla">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Origen</th>
+      <th>Destino</th>
+      <th>Precio</th>
+      <th>Conductor</th>
+      <th>Vehículo</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<script>
+fetch('/api/viajes')
+  .then(res => res.json())
+  .then(data => {
+
+    const tbody = document.querySelector('tbody');
+
+    data.forEach(viaje => {
+      const fila = `
+        <tr>
+          <td>${viaje.id}</td>
+          <td>${viaje.origen}</td>
+          <td>${viaje.destino}</td>
+          <td>${viaje.precio}</td>
+          <td>${viaje.conductor}</td>
+          <td>${viaje.vehiculo}</td>
+        </tr>
+      `;
+
+      tbody.innerHTML += fila;
+    });
+
+  });
+</script>
+
+</body>
+</html>
