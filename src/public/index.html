@@ -37,6 +37,9 @@
 
 <script>
 
+let map;
+let conductorMarker;
+
 function initMap() {
 
   const origen = { lat: 5.0219, lng: -74.0047 };
@@ -44,7 +47,7 @@ function initMap() {
 
   let conductor = { lat: 5.0285, lng: -73.9830 };
 
-  const map = new google.maps.Map(document.getElementById("map"), {
+  map = new google.maps.Map(document.getElementById("map"), {
     zoom: 9,
     center: origen
   });
@@ -76,7 +79,7 @@ function initMap() {
     title: "Destino"
   });
 
-  const conductorMarker = new google.maps.Marker({
+  conductorMarker = new google.maps.Marker({
     position: conductor,
     map: map,
     title: "Conductor",
@@ -86,7 +89,6 @@ function initMap() {
   function moverConductor() {
     conductor.lat += (origen.lat - conductor.lat) * 0.02;
     conductor.lng += (origen.lng - conductor.lng) * 0.02;
-
     conductorMarker.setPosition(conductor);
   }
 
@@ -121,8 +123,7 @@ async function pedirViaje() {
       "<br>Vehículo: " + data.conductor.tipoVehiculo;
 
   } catch (error) {
-    document.getElementById("resultado").innerHTML =
-      "Error backend";
+    document.getElementById("resultado").innerHTML = "Error backend";
   }
 }
 
