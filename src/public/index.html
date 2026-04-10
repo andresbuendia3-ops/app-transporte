@@ -3,17 +3,72 @@
 <head>
   <title>Mapa Transporte</title>
   <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+    }
+
     #map {
-      height: 90vh;
+      height: 100vh;
       width: 100%;
     }
 
     #panel {
-      padding: 10px;
-      background: white;
-      position: absolute;
-      z-index: 10;
-      width: 250px;
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 10;
+  background: white;
+  padding: 25px;
+  width: 320px;
+  min-height: 330px;
+  border-radius: 18px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+    h3 {
+      margin-top: 0;
+      margin-bottom: 20px;
+      font-size: 22px;
+    }
+
+    input, select, button {
+      width: 100%;
+      margin-top: 8px;
+      margin-bottom: 14px;
+      padding: 12px;
+      font-size: 15px;
+      border-radius: 12px;
+      border: 1px solid #ddd;
+      box-sizing: border-box;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: #999;
+    }
+
+    button {
+      background: #111;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: 0.3s;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background: #333;
+    }
+
+    #resultado {
+      margin-top: 18px;
+      font-size: 14px;
+      line-height: 1.6;
+      background: #f8f9fa;
+      padding: 12px;
+      border-radius: 10px;
     }
   </style>
 </head>
@@ -22,6 +77,9 @@
 <div id="panel">
   <h3>Solicitar viaje</h3>
 
+  <input id="origenTexto" placeholder="Origen">
+  <input id="destinoTexto" placeholder="Destino">
+
   <select id="vehiculo">
     <option value="carro">Carro</option>
     <option value="moto">Moto</option>
@@ -29,8 +87,9 @@
   </select>
 
   <button onclick="pedirViaje()">Pedir viaje</button>
+  <button onclick="verHistorial()">Ver historial</button>
 
-  <div id="resultado" style="margin-top:10px; font-weight:bold;"></div>
+  <div id="resultado"></div>
 </div>
 
 <div id="map"></div>
@@ -39,65 +98,51 @@
 
 let map;
 let conductorMarker;
+let directionsRenderer;
 
 function initMap() {
 
-  const origen = { lat: 5.0219, lng: -74.0047 };
-  const destino = { lat: 4.7110, lng: -74.0721 };
-
-  let conductor = { lat: 5.0285, lng: -73.9830 };
+  const centro = { lat: 5.0219, lng: -74.0047 };
 
   map = new google.maps.Map(document.getElementById("map"), {
     zoom: 9,
-    center: origen
+    center: centro
   });
 
-  const directionsService = new google.maps.DirectionsService();
-  const directionsRenderer = new google.maps.DirectionsRenderer();
-
+  directionsRenderer = new google.maps.DirectionsRenderer();
   directionsRenderer.setMap(map);
 
-  directionsService.route({
-    origin: origen,
-    destination: destino,
-    travelMode: 'DRIVING'
-  }, (result, status) => {
-    if (status === 'OK') {
-      directionsRenderer.setDirections(result);
-    }
-  });
-
-  new google.maps.Marker({
-    position: origen,
-    map: map,
-    title: "Origen"
-  });
-
-  new google.maps.Marker({
-    position: destino,
-    map: map,
-    title: "Destino"
-  });
-
   conductorMarker = new google.maps.Marker({
-    position: conductor,
+    position: centro,
     map: map,
     title: "Conductor",
     icon: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png"
   });
 
-  function moverConductor() {
-    conductor.lat += (origen.lat - conductor.lat) * 0.02;
-    conductor.lng += (origen.lng - conductor.lng) * 0.02;
-    conductorMarker.setPosition(conductor);
-  }
+  let clickCount = 0;
 
-  setInterval(moverConductor, 1000);
+  map.addListener("click", function(event) {
+
+    const lat = event.latLng.lat();
+    const lng = event.latLng.lng();
+
+    if (clickCount === 0) {
+      document.getElementById("origenTexto").value = lat + "," + lng;
+      clickCount++;
+    } else {
+      document.getElementById("destinoTexto").value = lat + "," + lng;
+      clickCount = 0;
+    }
+
+  });
+
 }
 
 async function pedirViaje() {
 
   const tipoVehiculo = document.getElementById("vehiculo").value;
+  const origen = document.getElementById("origenTexto").value.trim();
+  const destino = document.getElementById("destinoTexto").value.trim();
 
   document.getElementById("resultado").innerHTML = "Consultando...";
 
@@ -105,26 +150,154 @@ async function pedirViaje() {
 
     const response = await fetch('/api/distancia', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        origen: "5.0219,-74.0047",
-        destino: "4.7110,-74.0721",
-        tipoVehiculo: tipoVehiculo
-      })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ origen, destino, tipoVehiculo })
     });
 
     const data = await response.json();
 
+    const viajeResponse = await fetch('/api/viajes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        origen,
+        destino,
+        precio: data.precio_estimado,
+        conductor: data.conductor.nombre,
+        vehiculo: data.conductor.tipoVehiculo
+      })
+    });
+
+    const viajeGuardado = await viajeResponse.json();
+    const viajeId = viajeGuardado.id;
+
+    const origenLat = parseFloat(origen.split(",")[0]);
+    const origenLng = parseFloat(origen.split(",")[1]);
+    const destinoLat = parseFloat(destino.split(",")[0]);
+    const destinoLng = parseFloat(destino.split(",")[1]);
+
     document.getElementById("resultado").innerHTML =
       "Precio: " + data.precio_estimado +
       "<br>Conductor: " + data.conductor.nombre +
-      "<br>Vehículo: " + data.conductor.tipoVehiculo;
+      "<br>Vehículo: " + data.conductor.tipoVehiculo +
+      "<br><br>Estado: Esperando conductor...";
+
+    const esperarAceptacion = setInterval(async () => {
+
+      const estadoResponse = await fetch('/api/estado/' + viajeId);
+      const estadoData = await estadoResponse.json();
+
+      if (estadoData.estado === 'aceptado') {
+
+        clearInterval(esperarAceptacion);
+
+        document.getElementById("resultado").innerHTML =
+          "Precio: " + data.precio_estimado +
+          "<br>Conductor: " + data.conductor.nombre +
+          "<br>Vehículo: " + data.conductor.tipoVehiculo +
+          "<br><br>Estado: Conductor en camino";
+
+        const directionsService = new google.maps.DirectionsService();
+
+        directionsService.route({
+          origin: { lat: origenLat, lng: origenLng },
+          destination: { lat: destinoLat, lng: destinoLng },
+          travelMode: 'DRIVING'
+        }, (result, status) => {
+
+          if (status === 'OK') {
+
+            directionsRenderer.setDirections(result);
+
+            let conductor = {
+              lat: origenLat + ((Math.random() - 0.5) * 0.02),
+              lng: origenLng + ((Math.random() - 0.5) * 0.02)
+            };
+
+            let fase = 1;
+
+            conductorMarker.setPosition(conductor);
+
+            const animacion = setInterval(() => {
+
+              let objetivoLat = fase === 1 ? origenLat : destinoLat;
+              let objetivoLng = fase === 1 ? origenLng : destinoLng;
+
+              conductor.lat += (objetivoLat - conductor.lat) * 0.08;
+              conductor.lng += (objetivoLng - conductor.lng) * 0.08;
+
+              conductorMarker.setPosition(conductor);
+
+              fetch('/api/posicion/' + viajeId, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  lat: conductor.lat,
+                  lng: conductor.lng
+                })
+              });
+
+              if (
+                Math.abs(conductor.lat - objetivoLat) < 0.0005 &&
+                Math.abs(conductor.lng - objetivoLng) < 0.0005
+              ) {
+
+                if (fase === 1) {
+
+                  fase = 2;
+
+                  document.getElementById("resultado").innerHTML +=
+                    "<br>Estado: Pasajero recogido";
+
+                } else {
+
+                  clearInterval(animacion);
+
+                  document.getElementById("resultado").innerHTML +=
+                    "<br>Estado: Viaje finalizado" +
+                    "<br><br>Valor final: $" + data.precio_estimado +
+                    "<br>Método de pago: Efectivo" +
+                    "<br>Pago recibido";
+
+                }
+
+              }
+
+            }, 1000);
+
+          }
+
+        });
+
+      }
+
+    }, 2000);
 
   } catch (error) {
+
     document.getElementById("resultado").innerHTML = "Error backend";
+
   }
+
+}
+
+async function verHistorial() {
+
+  const response = await fetch('/api/viajes');
+  const viajes = await response.json();
+
+  let html = "<h4>Historial</h4>";
+
+  viajes.forEach(v => {
+    html += `
+      ${v.origen} → ${v.destino}<br>
+      Precio: ${v.precio}<br>
+      Conductor: ${v.conductor}<br><br>
+    `;
+  });
+
+  document.getElementById("resultado").innerHTML = html;
+
 }
 
 </script>

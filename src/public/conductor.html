@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Panel Conductor</title>
+  <style>
+    body {
+      font-family: Arial;
+      padding: 20px;
+    }
+
+    button {
+      padding: 8px 12px;
+      margin-top: 8px;
+      cursor: pointer;
+    }
+
+    .viaje {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+
+<h2>Panel Conductor</h2>
+
+<button onclick="verViajes()">Ver viajes pendientes</button>
+
+<div id="resultado"></div>
+
+<script>
+
+async function verViajes() {
+
+  const response = await fetch('/api/viajes');
+  const viajes = await response.json();
+
+  let html = "<h3>Viajes disponibles</h3>";
+
+  viajes.forEach(v => {
+
+    if (!v.aceptado) {
+
+      html += `
+        <div class="viaje">
+          ${v.origen} → ${v.destino}<br>
+          Precio: ${v.precio}<br>
+          <button onclick="aceptar(${v.id})">Aceptar viaje</button>
+        </div>
+      `;
+
+    }
+
+  });
+
+  document.getElementById("resultado").innerHTML = html;
+}
+
+async function aceptar(id) {
+
+  await fetch('/api/aceptar/' + id, {
+    method: 'POST'
+  });
+
+  document.getElementById("resultado").innerHTML =
+    "Viaje aceptado correctamente";
+
+  setTimeout(() => {
+    verViajes();
+  }, 1000);
+
+}
+
+</script>
+
+</body>
+</html>

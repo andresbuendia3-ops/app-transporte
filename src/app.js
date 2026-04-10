@@ -1,3 +1,4 @@
+const usersRoutes = require('./routes/users.routes');
 const express = require('express');
 const app = express();
 require('dotenv').config();
@@ -9,7 +10,7 @@ app.use(express.json());
 app.use(express.static('src/public'));
 
 app.use('/api', mapsRoutes);
-
+app.use('/api', usersRoutes);
 app.listen(3000, () => {
   console.log('Servidor corriendo en puerto 3000');
 });

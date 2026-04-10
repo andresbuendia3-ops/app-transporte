@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Panel Admin</title>
+  <style>
+    body {
+      font-family: Arial;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+    }
+
+    button {
+      padding: 10px 15px;
+      margin-right: 10px;
+      margin-bottom: 20px;
+      border: none;
+      background: black;
+      color: white;
+      cursor: pointer;
+      border-radius: 8px;
+    }
+
+    .bloque {
+      background: white;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 10px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+
+<h2>Panel Administrador</h2>
+
+<button onclick="verViajes()">Ver viajes</button>
+<button onclick="verUsuarios()">Ver usuarios</button>
+
+<div id="resultado"></div>
+
+<script>
+
+async function verViajes() {
+
+  const response = await fetch('/api/viaje/1');
+  let html = "<h3>Viajes registrados</h3>";
+
+  for (let i = 1; i <= 50; i++) {
+
+    const r = await fetch('/api/viaje/' + i);
+    const viaje = await r.json();
+
+    if (viaje && viaje.id) {
+      html += `
+        <div class="bloque">
+          ID: ${viaje.id}<br>
+          ${viaje.origen} → ${viaje.destino}<br>
+          Precio: ${viaje.precio}<br>
+          Estado: ${viaje.estado}
+        </div>
+      `;
+    }
+
+  }
+
+  document.getElementById("resultado").innerHTML = html;
+
+}
+
+async function verUsuarios() {
+
+  const response = await fetch('/api/usuarios');
+  const usuarios = await response.json();
+
+  let html = "<h3>Usuarios</h3>";
+
+  usuarios.forEach(u => {
+    html += `
+      <div class="bloque">
+        ${u.nombre}<br>
+        ${u.correo}<br>
+        Rol: ${u.rol}
+      </div>
+    `;
+  });
+
+  document.getElementById("resultado").innerHTML = html;
+
+}
+
+</script>
+
+</body>
+</html>
