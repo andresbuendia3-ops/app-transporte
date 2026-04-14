@@ -50,6 +50,9 @@ const getDistance = async (origin, destination, tipoVehiculo) => {
   }
 
   let precioBase = distancia_km * costoKm;
+  if (distancia_km > 25) {
+  precioBase += 35000;
+}
   let precioFinal = Math.round(precioBase * factorHora);
 
   if (precioFinal < 8000) {
