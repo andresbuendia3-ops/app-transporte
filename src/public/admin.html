@@ -39,6 +39,12 @@
     #resultado {
       margin-top: 10px;
     }
+
+    #map {
+      height: 400px;
+      margin-top: 20px;
+      border-radius: 12px;
+    }
   </style>
 </head>
 <body>
@@ -53,7 +59,24 @@
 
 <div id="resultado"></div>
 
+<div id="map"></div>
+
 <script>
+
+let map;
+let marker;
+
+function initMap() {
+  map = new google.maps.Map(document.getElementById("map"), {
+    zoom: 10,
+    center: { lat: 5.0315, lng: -74.0068 }
+  });
+
+  marker = new google.maps.Marker({
+    position: { lat: 5.0315, lng: -74.0068 },
+    map: map
+  });
+}
 
 async function verViajes() {
 
@@ -75,6 +98,19 @@ async function verViajes() {
           Lng: ${viaje.lng}
         </div>
       `;
+
+      if (viaje.lat && viaje.lng) {
+        marker.setPosition({
+          lat: viaje.lat,
+          lng: viaje.lng
+        });
+
+        map.setCenter({
+          lat: viaje.lat,
+          lng: viaje.lng
+        });
+      }
+
     });
 
     document.getElementById("resultado").innerHTML = html;
@@ -120,6 +156,10 @@ function cerrarSesion() {
   window.location.href = "/login.html";
 }
 
+</script>
+
+<script async defer
+src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAGjC1Eo3ldxv1wWBMDMdzkfqUZPL3TDM0&callback=initMap">
 </script>
 
 </body>
