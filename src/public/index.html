@@ -166,11 +166,15 @@ async function pedirViaje() {
       "<br><br>Estado: Esperando conductor...";
 
     if (data.precio_estimado > 50000) {
-      html += "<br><br><button onclick='negociar(" + viajeId + ")'>Negociar viaje</button>";
-    }
+  html += "<br><br><button id='btnNegociar'>Negociar viaje</button>";
+}
 
     document.getElementById("resultado").innerHTML = html;
-
+if (data.precio_estimado > 50000) {
+  document.getElementById("btnNegociar").addEventListener("click", function() {
+    negociar(viajeId);
+  });
+}
   } catch (error) {
 
     document.getElementById("resultado").innerHTML = "Error backend";
