@@ -131,7 +131,9 @@ async function verViajes() {
     });
 
     document.getElementById("resultado").innerHTML = html;
-
+setTimeout(() => {
+  verViajes();
+}, 3000);
   } catch (error) {
 
     document.getElementById("resultado").innerHTML = "Error cargando viajes";
