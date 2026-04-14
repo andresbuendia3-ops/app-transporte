@@ -66,20 +66,31 @@ async function verViajes() {
 
   for (let i = 1; i <= 50; i++) {
 
-    const r = await fetch('/api/viaje/' + i);
-    const viaje = await r.json();
+    try {
 
-    if (viaje && viaje.id) {
-      html += `
-        <div class="bloque">
-          ID: ${viaje.id}<br>
-          ${viaje.origen} → ${viaje.destino}<br>
-          Precio: ${viaje.precio}<br>
-          Estado: ${viaje.estado}<br>
-          Lat: ${viaje.lat}<br>
-          Lng: ${viaje.lng}
-        </div>
-      `;
+      const response = await fetch('/api/viaje/' + i);
+
+      if (!response.ok) {
+        continue;
+      }
+
+      const viaje = await response.json();
+
+      if (viaje && viaje.id) {
+        html += `
+          <div class="bloque">
+            ID: ${viaje.id}<br>
+            ${viaje.origen} → ${viaje.destino}<br>
+            Precio: ${viaje.precio}<br>
+            Estado: ${viaje.estado}<br>
+            Lat: ${viaje.lat}<br>
+            Lng: ${viaje.lng}
+          </div>
+        `;
+      }
+
+    } catch (error) {
+      continue;
     }
 
   }
@@ -90,22 +101,30 @@ async function verViajes() {
 
 async function verUsuarios() {
 
-  const response = await fetch('/api/usuarios');
-  const usuarios = await response.json();
+  try {
 
-  let html = "<h3>Usuarios registrados</h3>";
+    const response = await fetch('/api/usuarios');
+    const usuarios = await response.json();
 
-  usuarios.forEach(u => {
-    html += `
-      <div class="bloque">
-        Nombre: ${u.nombre}<br>
-        Correo: ${u.correo}<br>
-        Rol: ${u.rol}
-      </div>
-    `;
-  });
+    let html = "<h3>Usuarios registrados</h3>";
 
-  document.getElementById("resultado").innerHTML = html;
+    usuarios.forEach(u => {
+      html += `
+        <div class="bloque">
+          Nombre: ${u.nombre}<br>
+          Correo: ${u.correo}<br>
+          Rol: ${u.rol}
+        </div>
+      `;
+    });
+
+    document.getElementById("resultado").innerHTML = html;
+
+  } catch (error) {
+
+    document.getElementById("resultado").innerHTML = "Error cargando usuarios";
+
+  }
 
 }
 
