@@ -48,7 +48,10 @@
 </head>
 <body>
 
-<h2>Panel Administrador</h2>
+<div style="display:flex; justify-content:space-between; align-items:center;">
+  <h2 style="margin:0;">Panel Administrador</h2>
+  <button onclick="cerrarSesion()" style="width:auto;">Salir</button>
+</div>
 
 <button onclick="verViajes()">Ver viajes</button>
 <button onclick="verUsuarios()">Ver usuarios</button>
@@ -56,7 +59,9 @@
 <div id="resultado"></div>
 
 <script>
-
+function cerrarSesion() {
+  window.location.href = "/login.html";
+}
 async function verViajes() {
 
   let html = "<h3>Viajes registrados</h3>";
