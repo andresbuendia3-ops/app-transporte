@@ -25,11 +25,6 @@
       cursor: pointer;
       border-radius: 10px;
       font-weight: bold;
-      transition: 0.3s;
-    }
-
-    button:hover {
-      background: #333;
     }
 
     .bloque {
@@ -50,7 +45,7 @@
 
 <div style="display:flex; justify-content:space-between; align-items:center;">
   <h2>Panel Administrador</h2>
-  <button onclick="cerrarSesion()" style="width:auto;">Salir</button>
+  <button onclick="cerrarSesion()">Salir</button>
 </div>
 
 <button onclick="verViajes()">Ver viajes</button>
@@ -62,48 +57,33 @@
 
 async function verViajes() {
 
-  let html = "<h3>Viajes registrados</h3>";
+  try {
 
-  for (let i = 25; i <= 50; i++) {
+    const response = await fetch('/api/viajes');
+    const viajes = await response.json();
 
-    try {
+    let html = "<h3>Viajes registrados</h3>";
 
-      const response = await fetch('/api/viaje/' + i);
+    viajes.forEach(viaje => {
+      html += `
+        <div class="bloque">
+          ID: ${viaje.id}<br>
+          ${viaje.origen} → ${viaje.destino}<br>
+          Precio: ${viaje.precio}<br>
+          Estado: ${viaje.estado}<br>
+          Lat: ${viaje.lat}<br>
+          Lng: ${viaje.lng}
+        </div>
+      `;
+    });
 
-      if (!response.ok) continue;
+    document.getElementById("resultado").innerHTML = html;
 
-      const viaje = await response.json();
+  } catch (error) {
 
-      if (viaje && viaje.id) {
-        html += `
-          <div class="bloque">
-            ID: ${viaje.id}<br>
-            ${viaje.origen} → ${viaje.destino}<br>
-            Precio: ${viaje.precio}<br>
-            Estado: ${viaje.estado}<br>
-            Lat: ${viaje.lat}<br>
-            Lng: ${viaje.lng}
-          </div>
-        `;
-      }
-
-    } catch (error) {
-      continue;
-    }
+    document.getElementById("resultado").innerHTML = "Error cargando viajes";
 
   }
-
-  document.getElementById("resultado").innerHTML = html;
-
-}
-
-    } catch (error) {
-      continue;
-    }
-
-  }
-
-  document.getElementById("resultado").innerHTML = html;
 
 }
 
