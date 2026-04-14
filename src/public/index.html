@@ -88,8 +88,6 @@
 let map;
 let conductorMarker;
 let directionsRenderer;
-let autocompleteOrigen;
-let autocompleteDestino;
 
 function initMap() {
 
@@ -108,14 +106,6 @@ function initMap() {
     map: map,
     title: "Conductor"
   });
-
-  autocompleteOrigen = new google.maps.places.Autocomplete(
-    document.getElementById("origenTexto")
-  );
-
-  autocompleteDestino = new google.maps.places.Autocomplete(
-    document.getElementById("destinoTexto")
-  );
 
   let clickCount = 0;
 
@@ -205,7 +195,7 @@ async function verHistorial() {
 </script>
 
 <script async defer
-src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAGjC1Eo3ldxv1wWBMDMdzkfqUZPL3TDM0&libraries=places&callback=initMap">
+src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAGjC1Eo3ldxv1wWBMDMdzkfqUZPL3TDM0&callback=initMap">
 </script>
 
 </body>
