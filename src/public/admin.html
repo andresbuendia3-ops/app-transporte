@@ -127,7 +127,23 @@ document.getElementById("resumen").innerHTML =
   "Total ingresos: $" + total +
   "<br>Viajes pendientes: " + pendientes +
   "<br>Viajes aceptados: " + aceptados;
-    document.getElementById("resultado").innerHTML = html;
+  let total = 0;
+let pendientes = 0;
+let aceptados = 0;
+
+viajes.forEach(v => {
+  total += v.precio;
+
+  if (v.estado === "pendiente") pendientes++;
+  if (v.estado === "aceptado") aceptados++;
+});
+
+document.getElementById("resumen").innerHTML =
+  "Total ingresos: $" + total +
+  "<br>Viajes pendientes: " + pendientes +
+  "<br>Viajes aceptados: " + aceptados;
+
+document.getElementById("resultado").innerHTML = html;  
 setTimeout(() => {
   verViajes();
 }, 3000);
