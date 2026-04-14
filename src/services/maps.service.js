@@ -27,9 +27,15 @@ const getDistance = async (origin, destination, tipoVehiculo) => {
 
   let costoKm = 0;
 
-  if (tipoVehiculo === "carro") costoKm = 2200;
-  if (tipoVehiculo === "moto") costoKm = 1500;
-  if (tipoVehiculo === "van") costoKm = 3000;
+  if (distancia_km <= 25) {
+    if (tipoVehiculo === "carro") costoKm = 2200;
+    if (tipoVehiculo === "moto") costoKm = 1500;
+    if (tipoVehiculo === "van") costoKm = 3000;
+  } else {
+    if (tipoVehiculo === "carro") costoKm = 1200;
+    if (tipoVehiculo === "moto") costoKm = 900;
+    if (tipoVehiculo === "van") costoKm = 1800;
+  }
 
   const hora = new Date().getHours();
 
