@@ -12,13 +12,13 @@
 
     h2 {
       font-size: 28px;
-      margin: 0;
+      margin-bottom: 20px;
     }
 
     button {
       padding: 12px 18px;
       margin-right: 10px;
-      margin-bottom: 25px;
+      margin-bottom: 20px;
       border: none;
       background: #111;
       color: white;
@@ -29,15 +29,11 @@
 
     .bloque {
       background: white;
-      padding: 18px;
+      padding: 15px;
       margin-bottom: 15px;
-      border-radius: 14px;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.12);
-      line-height: 1.7;
-    }
-
-    #resultado {
-      margin-top: 10px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      line-height: 1.6;
     }
 
     #map {
@@ -49,16 +45,12 @@
 </head>
 <body>
 
-<div style="display:flex; justify-content:space-between; align-items:center;">
-  <h2>Panel Administrador</h2>
-  <button onclick="cerrarSesion()">Salir</button>
-</div>
+<h2>Panel Administrador</h2>
 
 <button onclick="verViajes()">Ver viajes</button>
 <button onclick="verUsuarios()">Ver usuarios</button>
 
 <div id="resultado"></div>
-
 <div id="map"></div>
 
 <script>
@@ -84,16 +76,6 @@ function initMap() {
     map.setCenter(centro);
   }, 500);
 }
-  map = new google.maps.Map(document.getElementById("map"), {
-    zoom: 10,
-    center: { lat: 5.0315, lng: -74.0068 }
-  });
-
-  marker = new google.maps.Marker({
-    position: { lat: 5.0315, lng: -74.0068 },
-    map: map
-  });
-}
 
 async function verViajes() {
 
@@ -103,8 +85,9 @@ async function verViajes() {
     const viajes = await response.json();
 
     let html = "<h3>Viajes registrados</h3>";
-console.log(viajes);
+
     viajes.forEach(viaje => {
+
       html += `
         <div class="bloque">
           ID: ${viaje.id}<br>
@@ -131,9 +114,7 @@ console.log(viajes);
     });
 
     document.getElementById("resultado").innerHTML = html;
-setTimeout(() => {
-  verViajes();
-}, 3000);
+
   } catch (error) {
 
     document.getElementById("resultado").innerHTML = "Error cargando viajes";
@@ -152,13 +133,15 @@ async function verUsuarios() {
     let html = "<h3>Usuarios registrados</h3>";
 
     usuarios.forEach(u => {
+
       html += `
         <div class="bloque">
-          Nombre: ${u.nombre}<br>
-          Correo: ${u.correo}<br>
+          ${u.nombre}<br>
+          ${u.correo}<br>
           Rol: ${u.rol}
         </div>
       `;
+
     });
 
     document.getElementById("resultado").innerHTML = html;
@@ -171,12 +154,10 @@ async function verUsuarios() {
 
 }
 
-function cerrarSesion() {
-  window.location.href = "/login.html";
-}
 window.onload = function() {
   initMap();
 };
+
 </script>
 
 <script async defer
