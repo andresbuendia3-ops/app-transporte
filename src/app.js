@@ -7,11 +7,11 @@ const mapsRoutes = require('./routes/maps.routes');
 
 app.use(express.json());
 
-app.use(express.static('src/public'));
-
 app.get('/', (req, res) => {
   res.redirect('/login.html');
 });
+
+app.use(express.static('src/public'));
 
 app.use('/api', mapsRoutes);
 app.use('/api', usersRoutes);
