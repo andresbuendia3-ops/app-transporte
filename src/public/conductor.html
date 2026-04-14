@@ -4,21 +4,44 @@
   <title>Panel Conductor</title>
   <style>
     body {
-      font-family: Arial;
-      padding: 20px;
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 30px;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      font-size: 26px;
     }
 
     button {
-      padding: 8px 12px;
-      margin-top: 8px;
+      padding: 12px 16px;
+      margin-top: 10px;
       cursor: pointer;
+      border: none;
+      border-radius: 10px;
+      background: #111;
+      color: white;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #333;
     }
 
     .viaje {
-      border: 1px solid #ccc;
-      padding: 10px;
-      margin-bottom: 10px;
-      border-radius: 8px;
+      background: white;
+      padding: 18px;
+      margin-bottom: 15px;
+      border-radius: 14px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+      line-height: 1.6;
+    }
+
+    #resultado {
+      margin-top: 25px;
     }
   </style>
 </head>
@@ -45,8 +68,9 @@ async function verViajes() {
 
       html += `
         <div class="viaje">
-          ${v.origen} → ${v.destino}<br>
-          Precio: ${v.precio}<br>
+          <strong>Origen:</strong> ${v.origen}<br>
+          <strong>Destino:</strong> ${v.destino}<br>
+          <strong>Precio:</strong> ${v.precio}<br>
           <button onclick="aceptar(${v.id})">Aceptar viaje</button>
         </div>
       `;
@@ -65,7 +89,7 @@ async function aceptar(id) {
   });
 
   document.getElementById("resultado").innerHTML =
-    "Viaje aceptado correctamente";
+    "<div class='viaje'>Viaje aceptado correctamente</div>";
 
   setTimeout(() => {
     verViajes();

@@ -4,33 +4,45 @@
   <title>Panel Admin</title>
   <style>
     body {
-      font-family: Arial;
-      background: #f5f5f5;
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
       margin: 0;
-      padding: 20px;
+      padding: 30px;
     }
 
     h2 {
-      margin-bottom: 20px;
+      font-size: 28px;
+      margin-bottom: 25px;
     }
 
     button {
-      padding: 10px 15px;
+      padding: 12px 18px;
       margin-right: 10px;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
       border: none;
-      background: black;
+      background: #111;
       color: white;
       cursor: pointer;
-      border-radius: 8px;
+      border-radius: 10px;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #333;
     }
 
     .bloque {
       background: white;
-      padding: 15px;
+      padding: 18px;
       margin-bottom: 15px;
-      border-radius: 10px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+      border-radius: 14px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+      line-height: 1.7;
+    }
+
+    #resultado {
+      margin-top: 10px;
     }
   </style>
 </head>
@@ -47,7 +59,6 @@
 
 async function verViajes() {
 
-  const response = await fetch('/api/viaje/1');
   let html = "<h3>Viajes registrados</h3>";
 
   for (let i = 1; i <= 50; i++) {
@@ -58,10 +69,10 @@ async function verViajes() {
     if (viaje && viaje.id) {
       html += `
         <div class="bloque">
-          ID: ${viaje.id}<br>
-          ${viaje.origen} → ${viaje.destino}<br>
-          Precio: ${viaje.precio}<br>
-          Estado: ${viaje.estado}
+          <strong>ID:</strong> ${viaje.id}<br>
+          <strong>Ruta:</strong> ${viaje.origen} → ${viaje.destino}<br>
+          <strong>Precio:</strong> ${viaje.precio}<br>
+          <strong>Estado:</strong> ${viaje.estado}
         </div>
       `;
     }
@@ -77,14 +88,14 @@ async function verUsuarios() {
   const response = await fetch('/api/usuarios');
   const usuarios = await response.json();
 
-  let html = "<h3>Usuarios</h3>";
+  let html = "<h3>Usuarios registrados</h3>";
 
   usuarios.forEach(u => {
     html += `
       <div class="bloque">
-        ${u.nombre}<br>
-        ${u.correo}<br>
-        Rol: ${u.rol}
+        <strong>Nombre:</strong> ${u.nombre}<br>
+        <strong>Correo:</strong> ${u.correo}<br>
+        <strong>Rol:</strong> ${u.rol}
       </div>
     `;
   });

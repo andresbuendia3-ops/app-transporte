@@ -9,8 +9,15 @@ app.use(express.json());
 
 app.use(express.static('src/public'));
 
+app.get('/', (req, res) => {
+  res.redirect('/login.html');
+});
+
 app.use('/api', mapsRoutes);
 app.use('/api', usersRoutes);
-app.listen(3000, () => {
-  console.log('Servidor corriendo en puerto 3000');
+
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log('Servidor corriendo en puerto ' + PORT);
 });
