@@ -43,22 +43,12 @@
       box-sizing: border-box;
     }
 
-    input:focus, select:focus {
-      outline: none;
-      border-color: #999;
-    }
-
     button {
       background: #111;
       color: white;
       border: none;
       cursor: pointer;
-      transition: 0.3s;
       font-weight: bold;
-    }
-
-    button:hover {
-      background: #333;
     }
 
     #resultado {
@@ -74,13 +64,8 @@
 <body>
 
 <div id="panel">
-  <div style="display:flex; justify-content:space-between; align-items:center;">
-  <h3 style="margin:0;">Solicitar viaje Premium</h3>
-  <button onclick="cerrarSesion()" style="width:auto; padding:8px 12px; font-size:12px;">
-    Salir
-  </button>
-</div>
-<button onclick="cerrarSesion()">Cerrar sesión</button>
+  <h3>Solicitar viaje Premium</h3>
+
   <input id="origenTexto" placeholder="Origen">
   <input id="destinoTexto" placeholder="Destino">
 
@@ -99,15 +84,12 @@
 <div id="map"></div>
 
 <script>
-function cerrarSesion() {
-  window.location.href = "/login.html";
-}  
-function cerrarSesion() {
-  window.location.href = "/login.html";
-}
+
 let map;
 let conductorMarker;
 let directionsRenderer;
+let autocompleteOrigen;
+let autocompleteDestino;
 
 function initMap() {
 
@@ -124,9 +106,16 @@ function initMap() {
   conductorMarker = new google.maps.Marker({
     position: centro,
     map: map,
-    title: "Conductor",
-    icon: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+    title: "Conductor"
   });
+
+  autocompleteOrigen = new google.maps.places.Autocomplete(
+    document.getElementById("origenTexto")
+  );
+
+  autocompleteDestino = new google.maps.places.Autocomplete(
+    document.getElementById("destinoTexto")
+  );
 
   let clickCount = 0;
 
@@ -180,107 +169,11 @@ async function pedirViaje() {
     const viajeGuardado = await viajeResponse.json();
     const viajeId = viajeGuardado.id;
 
-    const origenLat = parseFloat(origen.split(",")[0]);
-    const origenLng = parseFloat(origen.split(",")[1]);
-    const destinoLat = parseFloat(destino.split(",")[0]);
-    const destinoLng = parseFloat(destino.split(",")[1]);
-
     document.getElementById("resultado").innerHTML =
       "Precio: " + data.precio_estimado +
       "<br>Conductor: " + data.conductor.nombre +
       "<br>Vehículo: " + data.conductor.tipoVehiculo +
       "<br><br>Estado: Esperando conductor...";
-
-    const esperarAceptacion = setInterval(async () => {
-
-      const estadoResponse = await fetch('/api/estado/' + viajeId);
-      const estadoData = await estadoResponse.json();
-
-      if (estadoData.estado === 'aceptado') {
-
-        clearInterval(esperarAceptacion);
-
-        document.getElementById("resultado").innerHTML =
-          "Precio: " + data.precio_estimado +
-          "<br>Conductor: " + data.conductor.nombre +
-          "<br>Vehículo: " + data.conductor.tipoVehiculo +
-          "<br><br>Estado: Conductor en camino";
-
-        const directionsService = new google.maps.DirectionsService();
-
-        directionsService.route({
-          origin: { lat: origenLat, lng: origenLng },
-          destination: { lat: destinoLat, lng: destinoLng },
-          travelMode: 'DRIVING'
-        }, (result, status) => {
-
-          if (status === 'OK') {
-
-            directionsRenderer.setDirections(result);
-
-            let conductor = {
-              lat: origenLat + ((Math.random() - 0.5) * 0.02),
-              lng: origenLng + ((Math.random() - 0.5) * 0.02)
-            };
-
-            let fase = 1;
-
-            conductorMarker.setPosition(conductor);
-
-            const animacion = setInterval(() => {
-
-              let objetivoLat = fase === 1 ? origenLat : destinoLat;
-              let objetivoLng = fase === 1 ? origenLng : destinoLng;
-
-              conductor.lat += (objetivoLat - conductor.lat) * 0.08;
-              conductor.lng += (objetivoLng - conductor.lng) * 0.08;
-
-              conductorMarker.setPosition(conductor);
-
-              fetch('/api/posicion/' + viajeId, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  lat: conductor.lat,
-                  lng: conductor.lng
-                })
-              });
-
-              if (
-                Math.abs(conductor.lat - objetivoLat) < 0.0005 &&
-                Math.abs(conductor.lng - objetivoLng) < 0.0005
-              ) {
-
-                if (fase === 1) {
-
-                  fase = 2;
-
-                  document.getElementById("resultado").innerHTML +=
-                    "<br>Estado: Pasajero recogido";
-
-                } else {
-
-                  clearInterval(animacion);
-
-                  document.getElementById("resultado").innerHTML +=
-                    "<br>Estado: Viaje finalizado" +
-                    "<br><br>Valor final: $" + data.precio_estimado +
-                    "<br>Método de pago: Efectivo" +
-                    "<br>Pago recibido";
-
-                }
-
-              }
-
-            }, 1000);
-
-          }
-
-        });
-
-      }
-
-    }, 2000);
 
   } catch (error) {
 
@@ -312,7 +205,7 @@ async function verHistorial() {
 </script>
 
 <script async defer
-src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAGjC1Eo3ldxv1wWBMDMdzkfqUZPL3TDM0&callback=initMap">
+src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAGjC1Eo3ldxv1wWBMDMdzkfqUZPL3TDM0&libraries=places&callback=initMap">
 </script>
 
 </body>
