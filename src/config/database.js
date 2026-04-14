@@ -6,6 +6,7 @@ db.serialize(() => {
 
   db.run(`
     CREATE TABLE IF NOT EXISTS viajes (
+    
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       origen TEXT,
       destino TEXT,
@@ -13,6 +14,9 @@ db.serialize(() => {
       conductor TEXT,
       vehiculo TEXT,
       estado TEXT DEFAULT 'pendiente'
+      oferta_negociada INTEGER,
+      lat REAL,
+      lng REAL
     )
   `);
 
