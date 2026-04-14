@@ -49,7 +49,7 @@
 
 <button onclick="verViajes()">Ver viajes</button>
 <button onclick="verUsuarios()">Ver usuarios</button>
-
+<div id="resumen" class="bloque"></div>
 <div id="resultado"></div>
 <div id="map"></div>
 
@@ -112,7 +112,21 @@ async function verViajes() {
       }
 
     });
+let total = 0;
+let pendientes = 0;
+let aceptados = 0;
 
+viajes.forEach(v => {
+  total += v.precio;
+
+  if (v.estado === "pendiente") pendientes++;
+  if (v.estado === "aceptado") aceptados++;
+});
+
+document.getElementById("resumen").innerHTML =
+  "Total ingresos: $" + total +
+  "<br>Viajes pendientes: " + pendientes +
+  "<br>Viajes aceptados: " + aceptados;
     document.getElementById("resultado").innerHTML = html;
 setTimeout(() => {
   verViajes();
