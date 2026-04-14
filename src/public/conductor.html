@@ -47,14 +47,19 @@
 </head>
 <body>
 
-<h2>Panel Conductor</h2>
+<div style="display:flex; justify-content:space-between; align-items:center;">
+  <h2 style="margin:0;">Panel Conductor</h2>
+  <button onclick="cerrarSesion()" style="width:auto;">Salir</button>
+</div>
 
 <button onclick="verViajes()">Ver viajes pendientes</button>
 
 <div id="resultado"></div>
 
 <script>
-
+function cerrarSesion() {
+  window.location.href = "/login.html";
+}
 async function verViajes() {
 
   const response = await fetch('/api/viajes');
