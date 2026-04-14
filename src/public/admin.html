@@ -103,7 +103,7 @@ async function verViajes() {
     const viajes = await response.json();
 
     let html = "<h3>Viajes registrados</h3>";
-
+console.log(viajes);
     viajes.forEach(viaje => {
       html += `
         <div class="bloque">
