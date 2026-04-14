@@ -71,7 +71,7 @@ router.post('/viajes', (req, res) => {
 router.get('/viajes', (req, res) => {
 
   db.all(
-    `SELECT * FROM viajes WHERE estado IS NULL OR estado = 'pendiente'`,
+    `SELECT * FROM viajes`,
     [],
     (err, rows) => {
 
@@ -85,6 +85,8 @@ router.get('/viajes', (req, res) => {
 
     }
   );
+
+});
 
 });
 
