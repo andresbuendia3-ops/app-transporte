@@ -159,11 +159,17 @@ async function pedirViaje() {
     const viajeGuardado = await viajeResponse.json();
     const viajeId = viajeGuardado.id;
 
-    document.getElementById("resultado").innerHTML =
-      "Precio: " + data.precio_estimado +
-      "<br>Conductor: " + data.conductor.nombre +
-      "<br>Vehículo: " + data.conductor.tipoVehiculo +
-      "<br><br>Estado: Esperando conductor...";
+    let html =
+  "Precio: " + data.precio_estimado +
+  "<br>Conductor: " + data.conductor.nombre +
+  "<br>Vehículo: " + data.conductor.tipoVehiculo +
+  "<br><br>Estado: Esperando conductor...";
+
+if (data.precio_estimado > 50000) {
+  html += "<br><br><button onclick='negociar(" + viajeId + ")'>Negociar viaje</button>";
+}
+
+document.getElementById("resultado").innerHTML = html;
 
   } catch (error) {
 
@@ -174,6 +180,16 @@ async function pedirViaje() {
 }
 
 async function verHistorial() {
+async function negociar(viajeId) {
+
+  const nuevoValor = prompt("Proponga nuevo valor");
+
+  if (!nuevoValor) return;
+
+  document.getElementById("resultado").innerHTML +=
+    "<br>Oferta enviada: $" + nuevoValor;
+
+}  
 
   const response = await fetch('/api/viajes');
   const viajes = await response.json();
