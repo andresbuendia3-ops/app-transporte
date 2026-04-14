@@ -88,8 +88,6 @@ router.get('/viajes', (req, res) => {
 
 });
 
-});
-
 router.post('/aceptar/:id', (req, res) => {
 
   const id = req.params.id;
@@ -113,6 +111,7 @@ router.post('/aceptar/:id', (req, res) => {
   );
 
 });
+
 router.get('/estado/:id', (req, res) => {
 
   const id = req.params.id;
@@ -134,6 +133,7 @@ router.get('/estado/:id', (req, res) => {
   );
 
 });
+
 router.post('/posicion/:id', (req, res) => {
 
   const id = req.params.id;
@@ -158,6 +158,7 @@ router.post('/posicion/:id', (req, res) => {
   );
 
 });
+
 router.get('/viaje/:id', (req, res) => {
 
   const id = req.params.id;
@@ -179,4 +180,5 @@ router.get('/viaje/:id', (req, res) => {
   );
 
 });
+
 module.exports = router;
