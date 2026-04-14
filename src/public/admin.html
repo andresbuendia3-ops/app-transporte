@@ -64,15 +64,13 @@ async function verViajes() {
 
   let html = "<h3>Viajes registrados</h3>";
 
-  for (let i = 1; i <= 50; i++) {
+  for (let i = 25; i <= 50; i++) {
 
     try {
 
       const response = await fetch('/api/viaje/' + i);
 
-      if (!response.ok) {
-        continue;
-      }
+      if (!response.ok) continue;
 
       const viaje = await response.json();
 
@@ -88,6 +86,16 @@ async function verViajes() {
           </div>
         `;
       }
+
+    } catch (error) {
+      continue;
+    }
+
+  }
+
+  document.getElementById("resultado").innerHTML = html;
+
+}
 
     } catch (error) {
       continue;
