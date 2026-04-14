@@ -74,8 +74,13 @@
 <body>
 
 <div id="panel">
-  <h3>Solicitar viaje Premium</h3>
-
+  <div style="display:flex; justify-content:space-between; align-items:center;">
+  <h3 style="margin:0;">Solicitar viaje Premium</h3>
+  <button onclick="cerrarSesion()" style="width:auto; padding:8px 12px; font-size:12px;">
+    Salir
+  </button>
+</div>
+<button onclick="cerrarSesion()">Cerrar sesión</button>
   <input id="origenTexto" placeholder="Origen">
   <input id="destinoTexto" placeholder="Destino">
 
@@ -94,7 +99,12 @@
 <div id="map"></div>
 
 <script>
-
+function cerrarSesion() {
+  window.location.href = "/login.html";
+}  
+function cerrarSesion() {
+  window.location.href = "/login.html";
+}
 let map;
 let conductorMarker;
 let directionsRenderer;
