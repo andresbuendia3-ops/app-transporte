@@ -70,21 +70,17 @@ router.post('/viajes', (req, res) => {
 
 router.get('/viajes', (req, res) => {
 
-  db.all(
-    `SELECT * FROM viajes`,
-    [],
-    (err, rows) => {
+  db.all(`SELECT * FROM viajes`, [], (err, rows) => {
 
-      if (err) {
-        return res.status(500).json({
-          error: err.message
-        });
-      }
-
-      res.json(rows);
-
+    if (err) {
+      return res.status(500).json({
+        error: err.message
+      });
     }
-  );
+
+    res.json(rows);
+
+  });
 
 });
 
@@ -180,6 +176,7 @@ router.get('/viaje/:id', (req, res) => {
   );
 
 });
+
 router.post('/oferta/:id', (req, res) => {
 
   const id = req.params.id;
@@ -204,4 +201,5 @@ router.post('/oferta/:id', (req, res) => {
   );
 
 });
+
 module.exports = router;
