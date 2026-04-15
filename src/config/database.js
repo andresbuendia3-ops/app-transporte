@@ -27,7 +27,7 @@ db.serialize(() => {
       password TEXT,
       rol TEXT
     )
-  );
+  `);
 
 });
 
