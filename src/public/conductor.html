@@ -62,9 +62,11 @@ async function verViajes() {
   const response = await fetch('/api/viajes');
   const viajes = await response.json();
 
+  const viajesRecientes = viajes.reverse();
+
   let html = "";
 
-  viajes.reverse().forEach(v => {
+  viajesRecientes.forEach(v => {
 
     html += `
       <div class="viaje">
