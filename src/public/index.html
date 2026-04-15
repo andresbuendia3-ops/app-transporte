@@ -88,6 +88,7 @@
 let map;
 let conductorMarker;
 let directionsRenderer;
+let viajeActualId = null;
 
 function initMap() {
 
@@ -157,7 +158,7 @@ async function pedirViaje() {
     });
 
     const viajeGuardado = await viajeResponse.json();
-    const viajeId = viajeGuardado.id;
+    viajeActualId = viajeGuardado.id;
 
     let html =
       "Precio: " + data.precio_estimado +
@@ -166,15 +167,11 @@ async function pedirViaje() {
       "<br><br>Estado: Esperando conductor...";
 
     if (data.precio_estimado > 50000) {
-  html += "<br><br><button id='btnNegociar'>Negociar viaje</button>";
-}
+      html += "<br><br><button onclick='negociar()'>Negociar viaje</button>";
+    }
 
     document.getElementById("resultado").innerHTML = html;
-if (data.precio_estimado > 50000) {
-  document.getElementById("btnNegociar").addEventListener("click", function() {
-    negociar(viajeId);
-  });
-}
+
   } catch (error) {
 
     document.getElementById("resultado").innerHTML = "Error backend";
@@ -183,7 +180,7 @@ if (data.precio_estimado > 50000) {
 
 }
 
-async function negociar(viajeId) {
+function negociar() {
 
   const nuevoValor = prompt("Proponga nuevo valor");
 
