@@ -180,5 +180,28 @@ router.get('/viaje/:id', (req, res) => {
   );
 
 });
+router.post('/oferta/:id', (req, res) => {
 
+  const id = req.params.id;
+  const { oferta } = req.body;
+
+  db.run(
+    `UPDATE viajes SET oferta = ? WHERE id = ?`,
+    [oferta, id],
+    function(err) {
+
+      if (err) {
+        return res.status(500).json({
+          error: err.message
+        });
+      }
+
+      res.json({
+        mensaje: "Oferta guardada"
+      });
+
+    }
+  );
+
+});
 module.exports = router;

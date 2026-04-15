@@ -180,11 +180,21 @@ async function pedirViaje() {
 
 }
 
-function negociar() {
+async function negociar() {
 
   const nuevoValor = prompt("Proponga nuevo valor");
 
   if (!nuevoValor) return;
+
+  await fetch('/api/oferta/' + viajeActualId, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      oferta: nuevoValor
+    })
+  });
 
   document.getElementById("resultado").innerHTML +=
     "<br>Oferta enviada: $" + nuevoValor;
