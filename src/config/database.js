@@ -6,22 +6,18 @@ db.serialize(() => {
 
   db.run(`
     CREATE TABLE IF NOT EXISTS viajes (
-    
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       origen TEXT,
       destino TEXT,
       precio INTEGER,
       conductor TEXT,
       vehiculo TEXT,
-      estado TEXT DEFAULT 'pendiente'
-      oferta_negociada INTEGER,
+      estado TEXT DEFAULT 'pendiente',
       lat REAL,
-      lng REAL
+      lng REAL,
+      oferta INTEGER
     )
   `);
-
-  db.run(`ALTER TABLE viajes ADD COLUMN lat REAL`, () => {});
-  db.run(`ALTER TABLE viajes ADD COLUMN lng REAL`, () => {});
 
   db.run(`
     CREATE TABLE IF NOT EXISTS usuarios (
@@ -31,7 +27,7 @@ db.serialize(() => {
       password TEXT,
       rol TEXT
     )
-  `);
+  );
 
 });
 
