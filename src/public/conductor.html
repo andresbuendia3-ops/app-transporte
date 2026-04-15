@@ -4,55 +4,54 @@
   <title>Panel Conductor</title>
   <style>
     body {
+      margin: 0;
       font-family: Arial, sans-serif;
       background: #f4f6f8;
-      margin: 0;
       padding: 30px;
     }
 
     h2 {
-      font-size: 26px;
-      margin: 0;
+      margin-bottom: 25px;
+      font-size: 28px;
     }
 
     button {
-      padding: 12px 16px;
-      margin-top: 10px;
-      cursor: pointer;
-      border: none;
-      border-radius: 10px;
       background: #111;
       color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 10px;
+      cursor: pointer;
       font-weight: bold;
-      transition: 0.3s;
-    }
-
-    button:hover {
-      background: #333;
+      margin-top: 10px;
+      width: 100%;
     }
 
     .viaje {
       background: white;
-      padding: 18px;
-      margin-bottom: 15px;
-      border-radius: 14px;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.12);
-      line-height: 1.6;
+      padding: 20px;
+      margin-bottom: 18px;
+      border-radius: 16px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
     }
 
-    #resultado {
-      margin-top: 25px;
+    .titulo {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+
+    .dato {
+      margin-bottom: 8px;
+      font-size: 15px;
     }
   </style>
 </head>
 <body>
 
-<div style="display:flex; justify-content:space-between; align-items:center;">
-  <h2>Panel Conductor</h2>
-  <button onclick="cerrarSesion()" style="width:auto;">Salir</button>
-</div>
+<h2>Panel Conductor</h2>
 
-<button onclick="verViajes()">Ver viajes pendientes</button>
+<button onclick="verViajes()">Actualizar viajes</button>
 
 <div id="resultado"></div>
 
@@ -63,26 +62,34 @@ async function verViajes() {
   const response = await fetch('/api/viajes');
   const viajes = await response.json();
 
-  let html = "<h3>Viajes disponibles</h3>";
+  let html = "";
 
   viajes.forEach(v => {
 
-    if (!v.aceptado) {
+    html += `
+      <div class="viaje">
+        <div class="titulo">Viaje ID ${v.id}</div>
 
-      html += `
-        <div class="viaje">
-          <strong>Origen:</strong> ${v.origen}<br>
-          <strong>Destino:</strong> ${v.destino}<br>
-          <strong>Precio:</strong> ${v.precio}<br>
-          <button onclick="aceptar(${v.id})">Aceptar viaje</button>
-        </div>
-      `;
+        <div class="dato">Origen: ${v.origen}</div>
+        <div class="dato">Destino: ${v.destino}</div>
+        <div class="dato">Precio: $${v.precio}</div>
+        <div class="dato">Estado: ${v.estado}</div>
+        <div class="dato">Oferta: ${v.oferta ? "$" + v.oferta : "Sin oferta"}</div>
 
-    }
+        <button onclick="aceptar(${v.id})">Aceptar viaje</button>
+
+        ${v.oferta ? `
+          <button onclick="aceptarOferta(${v.id})">Aceptar oferta</button>
+          <button onclick="rechazarOferta(${v.id})">Rechazar oferta</button>
+        ` : ""}
+
+      </div>
+    `;
 
   });
 
   document.getElementById("resultado").innerHTML = html;
+
 }
 
 async function aceptar(id) {
@@ -91,18 +98,24 @@ async function aceptar(id) {
     method: 'POST'
   });
 
-  document.getElementById("resultado").innerHTML =
-    "<div class='viaje'>Viaje aceptado correctamente</div>";
-
-  setTimeout(() => {
-    verViajes();
-  }, 1000);
+  alert("Viaje aceptado");
+  verViajes();
 
 }
 
-function cerrarSesion() {
-  window.location.href = "/login.html";
+function aceptarOferta(id) {
+
+  alert("Oferta aceptada en viaje " + id);
+
 }
+
+function rechazarOferta(id) {
+
+  alert("Oferta rechazada en viaje " + id);
+
+}
+
+verViajes();
 
 </script>
 
