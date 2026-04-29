@@ -26,12 +26,6 @@
       box-shadow: 0 10px 30px rgba(0,0,0,0.15);
     }
 
-    h3 {
-      margin-top: 0;
-      margin-bottom: 20px;
-      font-size: 22px;
-    }
-
     input, select, button {
       width: 100%;
       margin-top: 8px;
@@ -64,7 +58,7 @@
 <body>
 
 <div id="panel">
-  <h3>Solicitar viaje Premium</h3>
+  <h3>Solicitar viaje</h3>
 
   <input id="origenTexto" placeholder="Origen">
   <input id="destinoTexto" placeholder="Destino">
@@ -76,7 +70,6 @@
   </select>
 
   <button onclick="pedirViaje()">Pedir viaje</button>
-  <button onclick="verHistorial()">Ver historial</button>
 
   <div id="resultado"></div>
 </div>
@@ -86,17 +79,16 @@
 <script>
 
 let map;
-let viajeActualId = null;
-let conductorMarker;
 let directionsRenderer;
+let conductorMarker;
 let viajeActualId = null;
 
 function initMap() {
 
-  const centro = { lat: 5.0219, lng: -74.0047 };
+  const centro = { lat: 4.7110, lng: -74.0721 };
 
   map = new google.maps.Map(document.getElementById("map"), {
-    zoom: 9,
+    zoom: 8,
     center: centro
   });
 
@@ -109,46 +101,35 @@ function initMap() {
     title: "Conductor"
   });
 
-  let clickCount = 0;
-
-  map.addListener("click", function(event) {
-
-    const lat = event.latLng.lat();
-    const lng = event.latLng.lng();
-
-    if (clickCount === 0) {
-      document.getElementById("origenTexto").value = lat + "," + lng;
-      clickCount++;
-    } else {
-      document.getElementById("destinoTexto").value = lat + "," + lng;
-      clickCount = 0;
-    }
-
-  });
-
 }
 
 async function pedirViaje() {
 
-  const tipoVehiculo = document.getElementById("vehiculo").value;
   const origen = document.getElementById("origenTexto").value.trim();
   const destino = document.getElementById("destinoTexto").value.trim();
-
-  document.getElementById("resultado").innerHTML = "Consultando...";
+  const tipoVehiculo = document.getElementById("vehiculo").value;
 
   try {
 
     const response = await fetch('/api/distancia', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ origen, destino, tipoVehiculo })
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        origen,
+        destino,
+        tipoVehiculo
+      })
     });
 
     const data = await response.json();
 
     const viajeResponse = await fetch('/api/viajes', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify({
         origen,
         destino,
@@ -158,24 +139,20 @@ async function pedirViaje() {
       })
     });
 
-   
     const viajeGuardado = await viajeResponse.json();
-viajeActualId = viajeGuardado.id;
-
-console.log("Nuevo viaje:", viajeActualId);
     viajeActualId = viajeGuardado.id;
 
-    let html =
-      "Precio: " + data.precio_estimado +
+    document.getElementById("resultado").innerHTML =
+      "Precio: $" + data.precio_estimado +
       "<br>Conductor: " + data.conductor.nombre +
-      "<br>Vehículo: " + data.conductor.tipoVehiculo +
-      "<br><br>Estado: Esperando conductor...";
+      "<br>Vehículo: " + data.conductor.tipoVehiculo;
 
-    if (data.precio_estimado > 50000) {
-      html += "<br><br><button onclick='negociar()'>Negociar viaje</button>";
+    if (data.precio_estimado >= 50000) {
+
+      document.getElementById("resultado").innerHTML +=
+        `<br><br><button onclick="negociar()">Negociar viaje</button>`;
+
     }
-
-    document.getElementById("resultado").innerHTML = html;
 
   } catch (error) {
 
@@ -191,38 +168,27 @@ async function negociar() {
 
   if (!nuevoValor) return;
 
-  const response = await fetch('/api/oferta/' + viajeActualId, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      oferta: parseInt(nuevoValor)
-    })
-  });
+  try {
 
-  const data = await response.json();
+    await fetch('/api/oferta/' + viajeActualId, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        oferta: parseInt(nuevoValor)
+      })
+    });
 
-  document.getElementById("resultado").innerHTML +=
-    "<br>Oferta enviada: $" + nuevoValor;
+    document.getElementById("resultado").innerHTML +=
+      "<br>Oferta enviada: $" + nuevoValor;
 
-}
-async function verHistorial() {
+  } catch (error) {
 
-  const response = await fetch('/api/viajes');
-  const viajes = await response.json();
+    document.getElementById("resultado").innerHTML +=
+      "<br>Error enviando oferta";
 
-  let html = "<h4>Historial</h4>";
-
-  viajes.forEach(v => {
-    html += `
-      ${v.origen} → ${v.destino}<br>
-      Precio: ${v.precio}<br>
-      Conductor: ${v.conductor}<br><br>
-    `;
-  });
-
-  document.getElementById("resultado").innerHTML = html;
+  }
 
 }
 
