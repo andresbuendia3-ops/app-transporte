@@ -143,7 +143,34 @@ async function pedirViaje() {
 
     const viajeGuardado = await viajeResponse.json();
     viajeActualId = viajeGuardado.id;
+const watcher = setInterval(async () => {
 
+  try {
+
+    const responseEstado = await fetch('/api/viaje/' + viajeActualId);
+    const viaje = await responseEstado.json();
+
+    console.log("WATCHER:", viaje);
+
+    if (viaje && viaje.estado === "oferta aceptada") {
+
+      document.getElementById("resultado").innerHTML = `
+        Precio final: $${viaje.precio}<br>
+        Estado: Oferta aceptada<br>
+        Conductor: ${viaje.conductor}
+      `;
+
+      clearInterval(watcher);
+
+    }
+
+  } catch (error) {
+
+    console.log("watch error");
+
+  }
+
+}, 2000);
     const watcher = setInterval(async () => {
 
   try {
