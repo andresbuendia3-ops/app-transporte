@@ -105,7 +105,17 @@ async function aceptar(id) {
 
 }
 
-function aceptarOferta(id) {
+async function aceptarOferta(id) {
+
+  await fetch('/api/aceptar-oferta/' + id, {
+    method: 'POST'
+  });
+
+  alert("Oferta aceptada");
+
+  verViajes();
+
+} {
 
   alert("Oferta aceptada en viaje " + id);
 
