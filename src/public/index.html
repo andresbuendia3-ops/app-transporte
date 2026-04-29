@@ -170,7 +170,22 @@ async function pedirViaje() {
   } catch (error) {
 
     document.getElementById("resultado").innerHTML = "Error backend";
+setInterval(async () => {
 
+  if (!viajeActualId) return;
+
+  const response = await fetch('/api/viaje/' + viajeActualId);
+  const viaje = await response.json();
+
+  if (viaje.estado === "oferta aceptada") {
+
+    document.getElementById("resultado").innerHTML =
+      "Precio final: $" + viaje.precio +
+      "<br>Estado: Oferta aceptada";
+
+  }
+
+}, 3000);
   }
 
 }
