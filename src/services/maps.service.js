@@ -2,7 +2,7 @@ const axios = require('axios');
 
 const getDistance = async (origin, destination, tipoVehiculo) => {
 
-  const apiKey = "AIzaSyAGjC1Eo3ldxv1wWBMDMdzkfqUZPL3TDM0";
+ const apiKey = "AIzaSyDNUs1DfDZyHUVbyEs0OOXmERKWDTO-DXA";
 
   const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${encodeURIComponent(origin)}&destinations=${encodeURIComponent(destination)}&key=${apiKey}`;
 
