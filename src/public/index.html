@@ -190,21 +190,22 @@ async function negociar() {
 
   if (!nuevoValor) return;
 
-  await fetch('/api/oferta/' + viajeActualId, {
+  const response = await fetch('/api/oferta/' + viajeActualId, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      oferta: nuevoValor
+      oferta: parseInt(nuevoValor)
     })
   });
+
+  const data = await response.json();
 
   document.getElementById("resultado").innerHTML +=
     "<br>Oferta enviada: $" + nuevoValor;
 
 }
-
 async function verHistorial() {
 
   const response = await fetch('/api/viajes');
