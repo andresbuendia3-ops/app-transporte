@@ -15,7 +15,7 @@ router.post('/distancia', async (req, res) => {
         error: "Faltan datos: origen, destino o tipoVehiculo"
       });
     }
-
+console.log("DISTANCIA RECIBIDA:", origen, destino, tipoVehiculo);
     const data = await getDistance(origen, destino, tipoVehiculo);
 
     const [lat, lng] = origen.split(",").map(v => parseFloat(v.trim()));
