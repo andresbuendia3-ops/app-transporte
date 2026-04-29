@@ -6,7 +6,6 @@
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: #f4f6f8;
     }
 
     #map {
@@ -20,38 +19,33 @@
       left: 20px;
       z-index: 10;
       background: white;
-      padding: 25px;
+      padding: 20px;
       width: 320px;
-      border-radius: 18px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+      border-radius: 14px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.2);
     }
 
     input, select, button {
       width: 100%;
       margin-top: 8px;
-      margin-bottom: 14px;
-      padding: 12px;
-      font-size: 15px;
-      border-radius: 12px;
-      border: 1px solid #ddd;
+      margin-bottom: 12px;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
       box-sizing: border-box;
     }
 
     button {
-      background: #111;
+      background: black;
       color: white;
       border: none;
       cursor: pointer;
-      font-weight: bold;
     }
 
     #resultado {
-      margin-top: 18px;
+      margin-top: 15px;
       font-size: 14px;
-      line-height: 1.6;
-      background: #f8f9fa;
-      padding: 12px;
-      border-radius: 10px;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -97,8 +91,24 @@ function initMap() {
 
   conductorMarker = new google.maps.Marker({
     position: centro,
-    map: map,
-    title: "Conductor"
+    map: map
+  });
+
+  let clickCount = 0;
+
+  map.addListener("click", function(event) {
+
+    const lat = event.latLng.lat();
+    const lng = event.latLng.lng();
+
+    if (clickCount === 0) {
+      document.getElementById("origenTexto").value = lat + "," + lng;
+      clickCount++;
+    } else {
+      document.getElementById("destinoTexto").value = lat + "," + lng;
+      clickCount = 0;
+    }
+
   });
 
 }
@@ -113,23 +123,15 @@ async function pedirViaje() {
 
     const response = await fetch('/api/distancia', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        origen,
-        destino,
-        tipoVehiculo
-      })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ origen, destino, tipoVehiculo })
     });
 
     const data = await response.json();
 
     const viajeResponse = await fetch('/api/viajes', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         origen,
         destino,
@@ -142,16 +144,27 @@ async function pedirViaje() {
     const viajeGuardado = await viajeResponse.json();
     viajeActualId = viajeGuardado.id;
 
+    const directionsService = new google.maps.DirectionsService();
+
+    directionsService.route({
+      origin: origen,
+      destination: destino,
+      travelMode: 'DRIVING'
+    }, (result, status) => {
+
+      if (status === 'OK') {
+        directionsRenderer.setDirections(result);
+      }
+
+    });
+
     document.getElementById("resultado").innerHTML =
       "Precio: $" + data.precio_estimado +
-      "<br>Conductor: " + data.conductor.nombre +
-      "<br>Vehículo: " + data.conductor.tipoVehiculo;
+      "<br>Conductor: " + data.conductor.nombre;
 
     if (data.precio_estimado >= 50000) {
-
       document.getElementById("resultado").innerHTML +=
         `<br><br><button onclick="negociar()">Negociar viaje</button>`;
-
     }
 
   } catch (error) {
@@ -168,27 +181,18 @@ async function negociar() {
 
   if (!nuevoValor) return;
 
-  try {
+  await fetch('/api/oferta/' + viajeActualId, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      oferta: parseInt(nuevoValor)
+    })
+  });
 
-    await fetch('/api/oferta/' + viajeActualId, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        oferta: parseInt(nuevoValor)
-      })
-    });
-
-    document.getElementById("resultado").innerHTML +=
-      "<br>Oferta enviada: $" + nuevoValor;
-
-  } catch (error) {
-
-    document.getElementById("resultado").innerHTML +=
-      "<br>Error enviando oferta";
-
-  }
+  document.getElementById("resultado").innerHTML +=
+    "<br>Oferta enviada: $" + nuevoValor;
 
 }
 
