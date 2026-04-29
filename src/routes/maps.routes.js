@@ -201,7 +201,51 @@ router.post('/oferta/:id', (req, res) => {
   );
 
 });
-router.post('/aceptar-oferta/:id', (req, res) => {
+,router.post('/aceptar-oferta/:id', (req, res) => {
+
+  const id = req.params.id;
+
+  db.get(
+    `SELECT oferta FROM viajes WHERE id = ?`,
+    [id],
+    (err, row) => {
+
+      if (err) {
+        return res.status(500).json({
+          error: err.message
+        });
+      }
+
+      if (!row || !row.oferta) {
+        return res.status(400).json({
+          error: "No existe oferta"
+        });
+      }
+
+      db.run(
+        `UPDATE viajes
+         SET precio = ?, estado = 'oferta aceptada'
+         WHERE id = ?`,
+        [row.oferta, id],
+        function(err2) {
+
+          if (err2) {
+            return res.status(500).json({
+              error: err2.message
+            });
+          }
+
+          res.json({
+            mensaje: "Oferta aceptada correctamente"
+          });
+
+        }
+      );
+
+    }
+  );
+
+}); (req, res) => {
 
   const id = req.params.id;
 
