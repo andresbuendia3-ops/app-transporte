@@ -18,7 +18,13 @@ const getDistance = async (origin, destination, tipoVehiculo) => {
     throw new Error("Google no devolvió elementos");
   }
 
-  if (data.rows[0].elements[0].status !== "OK") {
+  if (
+  !data.rows[0] ||
+  !data.rows[0].elements[0] ||
+  data.rows[0].elements[0].status !== "OK"
+) {
+  throw new Error("Ruta no válida");
+} {
     throw new Error("Error de Google: " + data.rows[0].elements[0].status);
   }
 
