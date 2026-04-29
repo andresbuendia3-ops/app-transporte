@@ -10,22 +10,16 @@ const getDistance = async (origin, destination, tipoVehiculo) => {
 
   const data = response.data;
 
-  if (!data.rows || data.rows.length === 0) {
-    throw new Error("Google no devolvió filas");
-  }
-
-  if (!data.rows[0].elements || data.rows[0].elements.length === 0) {
-    throw new Error("Google no devolvió elementos");
-  }
+  console.log("GOOGLE RESPONSE:", data);
 
   if (
-  !data.rows[0] ||
-  !data.rows[0].elements[0] ||
-  data.rows[0].elements[0].status !== "OK"
-) {
-  throw new Error("Ruta no válida");
-} {
-    throw new Error("Error de Google: " + data.rows[0].elements[0].status);
+    !data.rows ||
+    !data.rows[0] ||
+    !data.rows[0].elements ||
+    !data.rows[0].elements[0] ||
+    data.rows[0].elements[0].status !== "OK"
+  ) {
+    throw new Error("Google no devolvió ruta válida");
   }
 
   const distancia_km = data.rows[0].elements[0].distance.value / 1000;
