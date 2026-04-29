@@ -13,8 +13,9 @@ router.post('/registro', (req, res) => {
     function(err) {
 
       if (err) {
-        console.log(err);
-        return res.status(500).json({ error: err.message });
+        return res.status(500).json({
+          error: err.message
+        });
       }
 
       res.json({
@@ -31,16 +32,15 @@ router.post('/login', (req, res) => {
 
   const { correo, password } = req.body;
 
-  console.log("LOGIN:", correo, password);
-
   db.get(
     `SELECT * FROM usuarios WHERE correo = ? AND password = ?`,
     [correo, password],
     (err, row) => {
 
       if (err) {
-        console.log("SQL ERROR:", err);
-        return res.status(500).json({ error: err.message });
+        return res.status(500).json({
+          error: err.message
+        });
       }
 
       if (!row) {
@@ -64,7 +64,9 @@ router.get('/usuarios', (req, res) => {
   db.all(`SELECT * FROM usuarios`, [], (err, rows) => {
 
     if (err) {
-      return res.status(500).json({ error: err.message });
+      return res.status(500).json({
+        error: err.message
+      });
     }
 
     res.json(rows);

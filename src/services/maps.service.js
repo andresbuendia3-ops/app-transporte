@@ -2,7 +2,7 @@ const axios = require('axios');
 
 const getDistance = async (origin, destination, tipoVehiculo) => {
 
-  const apiKey = "AIzaSyCziXvW69cBzTFvucaphEI8MhbtTjF5vq8";
+  const apiKey = "AIzaSyAGjC1Eo3ldxv1wWBMDMdzkfqUZPL3TDM0";
 
   const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${encodeURIComponent(origin)}&destinations=${encodeURIComponent(destination)}&key=${apiKey}`;
 
@@ -50,9 +50,11 @@ const getDistance = async (origin, destination, tipoVehiculo) => {
   }
 
   let precioBase = distancia_km * costoKm;
+
   if (distancia_km > 25) {
-  precioBase += 35000;
-}
+    precioBase += 35000;
+  }
+
   let precioFinal = Math.round(precioBase * factorHora);
 
   if (precioFinal < 8000) {
