@@ -144,7 +144,7 @@ async function pedirViaje() {
     const viajeGuardado = await viajeResponse.json();
     viajeActualId = viajeGuardado.id;
 
-    setInterval(async () => {
+    const watcher = setInterval(async () => {
 
       if (!viajeActualId) return;
 
@@ -156,7 +156,7 @@ async function pedirViaje() {
         document.getElementById("resultado").innerHTML =
           "Precio final: $" + viaje.precio +
           "<br>Estado: Oferta aceptada";
-
+clearInterval(watcher);
       }
 
     }, 3000);
