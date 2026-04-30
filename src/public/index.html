@@ -210,11 +210,11 @@ setInterval(async () => {
 
     if (viaje && viaje.estado === "aceptado") {
 
-      document.getElementById("precioBox").innerHTML = `
-        Precio final: $${viaje.precio}<br>
-        Estado: Oferta aceptada<br>
-        Conductor: ${viaje.conductor}
-      `;
+     document.getElementById("resultado").innerHTML = `
+  Precio final: $${viaje.precio}<br>
+  Estado: Viaje aceptado<br>
+  Conductor: ${viaje.conductor}
+`;
 
     }
 
