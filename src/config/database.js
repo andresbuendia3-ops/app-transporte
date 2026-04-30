@@ -29,10 +29,6 @@ db.serialize(() => {
     )
   `);
 
-  db.run(`ALTER TABLE viajes ADD COLUMN oferta INTEGER`, () => {});
-  db.run(`ALTER TABLE viajes ADD COLUMN lat REAL`, () => {});
-  db.run(`ALTER TABLE viajes ADD COLUMN lng REAL`, () => {});
-
 });
 
 module.exports = db;
