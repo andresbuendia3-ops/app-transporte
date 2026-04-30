@@ -133,7 +133,9 @@ async function pedirViaje() {
     });
 
     const viajeGuardado = await viajeResponse.json();
-
+viajeActualId = viajeGuardado.id;
+localStorage.setItem("viajeActualId", viajeGuardado.id);
+console.log("ID GUARDADO:", viajeGuardado.id);
     viajeActualId = viajeGuardado.id;
     localStorage.setItem("viajeActualId", viajeActualId);
 
