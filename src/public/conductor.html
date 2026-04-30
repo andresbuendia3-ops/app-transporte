@@ -108,21 +108,22 @@ async function aceptar(id) {
     lat += 0.01;
     lng += 0.01;
 
+    console.log("MOVIENDO:", lat, lng);
+
     await fetch('/api/posicion/' + id, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        lat,
-        lng
+        lat: lat,
+        lng: lng
       })
     });
 
   }, 3000);
 
   alert("Viaje aceptado");
-
   verViajes();
 
 }
