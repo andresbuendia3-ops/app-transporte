@@ -78,15 +78,17 @@
 
 let map;
 let directionsRenderer;
-let viajeActualId = null;
+let viajeActualId = localStorage.getItem("viajeActualId");
 
 setInterval(async () => {
 
-  if (!viajeActualId) return;
+  const id = localStorage.getItem("viajeActualId");
+
+  if (!id) return;
 
   try {
 
-    const responseEstado = await fetch('/api/viaje/' + viajeActualId);
+    const responseEstado = await fetch('/api/viaje/' + id);
     const viaje = await responseEstado.json();
 
     console.log("WATCHER:", viaje);
@@ -182,6 +184,7 @@ async function pedirViaje() {
 
     const viajeGuardado = await viajeResponse.json();
     viajeActualId = viajeGuardado.id;
+localStorage.setItem("viajeActualId", viajeActualId);
 console.log("ID ACTUAL:", viajeActualId);
     const directionsService = new google.maps.DirectionsService();
 
