@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Mapa Transporte</title>
+  <title>Solicitar viaje</title>
   <style>
     body {
       margin: 0;
@@ -15,21 +15,21 @@
 
     #panel {
       position: absolute;
-      top: 20px;
-      left: 20px;
+      top: 15px;
+      left: 15px;
       z-index: 10;
       background: white;
-      padding: 20px;
+      padding: 18px;
       width: 320px;
       border-radius: 14px;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
     }
 
     input, select, button {
       width: 100%;
-      margin-top: 8px;
-      margin-bottom: 12px;
-      padding: 10px;
+      margin-top: 10px;
+      margin-bottom: 10px;
+      padding: 12px;
       border-radius: 8px;
       border: 1px solid #ccc;
       box-sizing: border-box;
@@ -39,27 +39,28 @@
       background: black;
       color: white;
       border: none;
-      cursor: pointer;
       font-weight: bold;
+      cursor: pointer;
     }
 
     #resultado {
       margin-top: 15px;
-      font-size: 14px;
-      font-weight: bold;
       background: #f3f3f3;
       padding: 12px;
       border-radius: 10px;
+      font-size: 14px;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
 
 <div id="panel">
-  <h3>Solicitar viaje</h3>
 
-  <input id="origenTexto" placeholder="Origen">
-  <input id="destinoTexto" placeholder="Destino">
+  <h2>Solicitar viaje</h2>
+
+  <input id="origenTexto" value="4.7110,-74.0721">
+  <input id="destinoTexto" value="5.5353,-73.3678">
 
   <select id="vehiculo">
     <option value="carro">Carro</option>
@@ -70,75 +71,28 @@
   <button onclick="pedirViaje()">Pedir viaje</button>
 
   <div id="resultado"></div>
+
 </div>
 
 <div id="map"></div>
 
 <script>
 
+console.log("SCRIPT CARGADO");
+
 let map;
 let directionsRenderer;
 let viajeActualId = localStorage.getItem("viajeActualId");
 
-setInterval(async () => {
-
-  const id = localStorage.getItem("viajeActualId");
-
-  if (!id) return;
-
-  try {
-
-    const responseEstado = await fetch('/api/viaje/' + id);
-    const viaje = await responseEstado.json();
-
-    console.log("WATCHER:", viaje);
-
-    if (viaje && viaje.estado === "oferta aceptada") {
-
-      document.getElementById("precioBox").innerHTML = `
-        Precio final: $${viaje.precio}<br>
-        Estado: Oferta aceptada<br>
-        Conductor: ${viaje.conductor}
-      `;
-
-    }
-
-  } catch (error) {
-
-    console.log("watch error");
-
-  }
-
-}, 2000);
-
 function initMap() {
-
-  const centro = { lat: 4.7110, lng: -74.0721 };
 
   map = new google.maps.Map(document.getElementById("map"), {
     zoom: 8,
-    center: centro
+    center: { lat: 4.7110, lng: -74.0721 }
   });
 
   directionsRenderer = new google.maps.DirectionsRenderer();
   directionsRenderer.setMap(map);
-
-  let clickCount = 0;
-
-  map.addListener("click", function(event) {
-
-    const lat = event.latLng.lat();
-    const lng = event.latLng.lng();
-
-    if (clickCount === 0) {
-      document.getElementById("origenTexto").value = lat + "," + lng;
-      clickCount++;
-    } else {
-      document.getElementById("destinoTexto").value = lat + "," + lng;
-      clickCount = 0;
-    }
-
-  });
 
 }
 
@@ -179,22 +133,9 @@ async function pedirViaje() {
     });
 
     const viajeGuardado = await viajeResponse.json();
+
     viajeActualId = viajeGuardado.id;
-localStorage.setItem("viajeActualId", viajeActualId);
-console.log("ID ACTUAL:", viajeActualId);
-    const directionsService = new google.maps.DirectionsService();
-
-    directionsService.route({
-      origin: origen,
-      destination: destino,
-      travelMode: 'DRIVING'
-    }, (result, status) => {
-
-      if (status === 'OK') {
-        directionsRenderer.setDirections(result);
-      }
-
-    });
+    localStorage.setItem("viajeActualId", viajeActualId);
 
     document.getElementById("resultado").innerHTML = `
       <div id="precioBox">
@@ -208,6 +149,20 @@ console.log("ID ACTUAL:", viajeActualId);
         <br><button onclick="negociar()">Negociar viaje</button>
       `;
     }
+
+    const directionsService = new google.maps.DirectionsService();
+
+    directionsService.route({
+      origin: origen,
+      destination: destino,
+      travelMode: 'DRIVING'
+    }, (result, status) => {
+
+      if (status === 'OK') {
+        directionsRenderer.setDirections(result);
+      }
+
+    });
 
   } catch (error) {
 
@@ -238,6 +193,37 @@ async function negociar() {
   `;
 
 }
+
+setInterval(async () => {
+
+  const id = localStorage.getItem("viajeActualId");
+
+  if (!id) return;
+
+  try {
+
+    const responseEstado = await fetch('/api/viaje/' + id);
+    const viaje = await responseEstado.json();
+
+    console.log("WATCHER:", viaje);
+
+    if (viaje && viaje.estado === "oferta aceptada") {
+
+      document.getElementById("precioBox").innerHTML = `
+        Precio final: $${viaje.precio}<br>
+        Estado: Oferta aceptada<br>
+        Conductor: ${viaje.conductor}
+      `;
+
+    }
+
+  } catch (error) {
+
+    console.log("watch error");
+
+  }
+
+}, 2000);
 
 </script>
 
