@@ -142,5 +142,28 @@ router.get('/viaje/:id', (req, res) => {
   );
 
 });
+router.post('/posicion/:id', (req, res) => {
 
+  const id = req.params.id;
+  const { lat, lng } = req.body;
+
+  db.run(
+    `UPDATE viajes SET lat = ?, lng = ? WHERE id = ?`,
+    [lat, lng, id],
+    function(err) {
+
+      if (err) {
+        return res.status(500).json({
+          error: err.message
+        });
+      }
+
+      res.json({
+        mensaje: "Posición actualizada"
+      });
+
+    }
+  );
+
+});
 module.exports = router;
