@@ -93,11 +93,15 @@ setInterval(async () => {
 
     if (viaje && viaje.estado === "oferta aceptada") {
 
-      document.getElementById("resultado").innerHTML = `
-        Precio final: $${viaje.precio}<br>
-        Estado: Oferta aceptada<br>
-        Conductor: ${viaje.conductor}
-      `;
+      const precioBox = document.getElementById("precioBox");
+
+      if (precioBox) {
+        precioBox.innerHTML = `
+          Precio final: $${viaje.precio}<br>
+          Estado: Oferta aceptada<br>
+          Conductor: ${viaje.conductor}
+        `;
+      }
 
     }
 
@@ -108,6 +112,7 @@ setInterval(async () => {
   }
 
 }, 2000);
+
 function initMap() {
 
   const centro = { lat: 4.7110, lng: -74.0721 };
@@ -178,32 +183,6 @@ async function pedirViaje() {
     const viajeGuardado = await viajeResponse.json();
     viajeActualId = viajeGuardado.id;
 
-    const watcher = setInterval(async () => {
-
-      try {
-
-        const responseEstado = await fetch('/api/viaje/' + viajeActualId);
-        const viaje = await responseEstado.json();
-
-        console.log("WATCHER:", viaje);
-
-        if (viaje && viaje.estado === "oferta aceptada") {
-
-      document.getElementById("resultado").innerHTML = `
-  <div id="precioBox">
-    Precio: $${data.precio_estimado}<br>
-    Conductor: ${data.conductor.nombre}
-  </div>
-`;
-
-      } catch (error) {
-
-        console.log("watch error");
-
-      }
-
-    }, 2000);
-
     const directionsService = new google.maps.DirectionsService();
 
     directionsService.route({
@@ -219,23 +198,22 @@ async function pedirViaje() {
     });
 
     document.getElementById("resultado").innerHTML = `
-      Precio: $${data.precio_estimado}<br>
-      Conductor: ${data.conductor.nombre}
+      <div id="precioBox">
+        Precio: $${data.precio_estimado}<br>
+        Conductor: ${data.conductor.nombre}
+      </div>
     `;
 
     if (data.precio_estimado >= 50000) {
-   document.getElementById("resultado").innerHTML += `
-  <br><button onclick="negociar()">Negociar viaje</button>
-`;   
+      document.getElementById("resultado").innerHTML += `
+        <br><button onclick="negociar()">Negociar viaje</button>
+      `;
     }
 
   } catch (error) {
 
-    document.getElementById("precioBox").innerHTML = 
-Precio final: $${viaje.precio}<br>
-  Estado: Oferta aceptada<br>
-  Conductor: ${viaje.conductor}
-  ;
+    document.getElementById("resultado").innerHTML = "Error backend";
+
   }
 
 }
