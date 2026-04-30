@@ -13,7 +13,7 @@ app.get('/', (req, res) => {
 
 app.use(express.static('src/public'));
 
-app.use('/api', mapsRoutes);     // app.use('/api', mapsRoutes);
+app.use('/api', mapsRoutes);
 app.use('/api', usersRoutes);
 
 const PORT = process.env.PORT || 3000;
