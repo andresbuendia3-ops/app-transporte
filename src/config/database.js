@@ -4,8 +4,10 @@ const db = new sqlite3.Database('./viajes.db');
 
 db.serialize(() => {
 
+  db.run(`DROP TABLE IF EXISTS viajes`);
+
   db.run(`
-    CREATE TABLE IF NOT EXISTS viajes (
+    CREATE TABLE viajes (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       origen TEXT,
       destino TEXT,
@@ -16,16 +18,6 @@ db.serialize(() => {
       lat REAL,
       lng REAL,
       oferta INTEGER
-    )
-  `);
-
-  db.run(`
-    CREATE TABLE IF NOT EXISTS usuarios (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      nombre TEXT,
-      correo TEXT UNIQUE,
-      password TEXT,
-      rol TEXT
     )
   `);
 
