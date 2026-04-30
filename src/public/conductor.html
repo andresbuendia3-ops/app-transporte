@@ -5,45 +5,38 @@
   <style>
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
+      font-family: Arial;
       background: #f4f6f8;
-      padding: 30px;
+      padding: 20px;
     }
 
     h2 {
-      margin-bottom: 25px;
       font-size: 28px;
+      margin-bottom: 20px;
     }
 
     button {
-      background: #111;
-      color: white;
-      border: none;
-      padding: 12px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-weight: bold;
-      margin-top: 10px;
       width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 10px;
+      background: black;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
     }
 
     .viaje {
       background: white;
-      padding: 20px;
+      padding: 18px;
       margin-bottom: 18px;
-      border-radius: 16px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-    }
-
-    .titulo {
-      font-size: 18px;
-      font-weight: bold;
-      margin-bottom: 12px;
+      border-radius: 14px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
     }
 
     .dato {
       margin-bottom: 8px;
-      font-size: 15px;
     }
   </style>
 </head>
@@ -62,31 +55,38 @@ async function verViajes() {
   const response = await fetch('/api/viajes');
   const viajes = await response.json();
 
-  const viajesRecientes = viajes.reverse();
-
   let html = "";
 
-  viajesRecientes.forEach(v => {
+  viajes.reverse().forEach(v => {
 
     html += `
       <div class="viaje">
-        <div class="titulo">Viaje ID ${v.id}</div>
 
+        <div class="dato"><b>Viaje ID ${v.id}</b></div>
         <div class="dato">Origen: ${v.origen}</div>
         <div class="dato">Destino: ${v.destino}</div>
         <div class="dato">Precio: $${v.precio}</div>
         <div class="dato">Estado: ${v.estado}</div>
         <div class="dato">Oferta: ${v.oferta ? "$" + v.oferta : "Sin oferta"}</div>
-
-        <button onclick="aceptar(${v.id})">Aceptar viaje</button>
-
-        ${v.oferta ? `
-          <button onclick="aceptarOferta(${v.id})">Aceptar oferta</button>
-          <button onclick="rechazarOferta(${v.id})">Rechazar oferta</button>
-        ` : ""}
-
-      </div>
     `;
+
+    if (v.estado === "pendiente") {
+
+      html += `
+        <button onclick="aceptar(${v.id})">Aceptar viaje</button>
+      `;
+
+    }
+
+    if (v.oferta) {
+
+      html += `
+        <button onclick="aceptarOferta(${v.id})">Aceptar oferta</button>
+      `;
+
+    }
+
+    html += `</div>`;
 
   });
 
@@ -100,30 +100,19 @@ async function aceptar(id) {
     method: 'POST'
   });
 
-  alert("Viaje aceptado");
   verViajes();
 
 }
 
 async function aceptarOferta(id) {
 
-  await fetch('/api/aceptar-oferta/' + id, {
+  await fetch('/api/aceptar/' + id, {
     method: 'POST'
   });
 
   alert("Oferta aceptada");
 
   verViajes();
-
-} {
-
-  alert("Oferta aceptada en viaje " + id);
-
-}
-
-function rechazarOferta(id) {
-
-  alert("Oferta rechazada en viaje " + id);
 
 }
 
