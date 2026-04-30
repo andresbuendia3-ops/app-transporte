@@ -182,7 +182,7 @@ async function pedirViaje() {
 
     const viajeGuardado = await viajeResponse.json();
     viajeActualId = viajeGuardado.id;
-
+console.log("ID ACTUAL:", viajeActualId);
     const directionsService = new google.maps.DirectionsService();
 
     directionsService.route({
