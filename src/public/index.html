@@ -133,12 +133,11 @@ async function pedirViaje() {
     });
 
     const viajeGuardado = await viajeResponse.json();
+
 viajeActualId = viajeGuardado.id;
 localStorage.setItem("viajeActualId", viajeGuardado.id);
 console.log("ID GUARDADO:", viajeGuardado.id);
-    viajeActualId = viajeGuardado.id;
-    localStorage.setItem("viajeActualId", viajeActualId);
-
+   
     document.getElementById("resultado").innerHTML = `
       <div id="precioBox">
         Precio: $${data.precio_estimado}<br>
