@@ -79,7 +79,34 @@
 let map;
 let directionsRenderer;
 let viajeActualId = null;
+setInterval(async () => {
 
+  if (!viajeActualId) return;
+
+  try {
+
+    const responseEstado = await fetch('/api/viaje/' + viajeActualId);
+    const viaje = await responseEstado.json();
+
+    console.log("WATCHER:", viaje);
+
+    if (viaje && viaje.estado === "oferta aceptada") {
+
+      document.getElementById("resultado").innerHTML = `
+        Precio final: $${viaje.precio}<br>
+        Estado: Oferta aceptada<br>
+        Conductor: ${viaje.conductor}
+      `;
+
+    }
+
+  } catch (error) {
+
+    console.log("watch error");
+
+  }
+
+}, 2000);
 function initMap() {
 
   const centro = { lat: 4.7110, lng: -74.0721 };
