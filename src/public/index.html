@@ -208,7 +208,7 @@ setInterval(async () => {
 
     console.log("WATCHER:", viaje);
 
-    if (viaje && viaje.estado === "oferta aceptada") {
+    if (viaje && viaje.estado === "aceptado") {
 
       document.getElementById("precioBox").innerHTML = `
         Precio final: $${viaje.precio}<br>
