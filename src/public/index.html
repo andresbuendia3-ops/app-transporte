@@ -40,12 +40,16 @@
       color: white;
       border: none;
       cursor: pointer;
+      font-weight: bold;
     }
 
     #resultado {
       margin-top: 15px;
       font-size: 14px;
       font-weight: bold;
+      background: #f3f3f3;
+      padding: 12px;
+      border-radius: 10px;
     }
   </style>
 </head>
@@ -74,7 +78,6 @@
 
 let map;
 let directionsRenderer;
-let conductorMarker;
 let viajeActualId = null;
 
 function initMap() {
@@ -88,11 +91,6 @@ function initMap() {
 
   directionsRenderer = new google.maps.DirectionsRenderer();
   directionsRenderer.setMap(map);
-
-  conductorMarker = new google.maps.Marker({
-    position: centro,
-    map: map
-  });
 
   let clickCount = 0;
 
@@ -123,15 +121,23 @@ async function pedirViaje() {
 
     const response = await fetch('/api/distancia', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ origen, destino, tipoVehiculo })
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        origen,
+        destino,
+        tipoVehiculo
+      })
     });
 
     const data = await response.json();
 
     const viajeResponse = await fetch('/api/viajes', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify({
         origen,
         destino,
@@ -143,63 +149,35 @@ async function pedirViaje() {
 
     const viajeGuardado = await viajeResponse.json();
     viajeActualId = viajeGuardado.id;
-const watcher = setInterval(async () => {
 
-  try {
-
-    const responseEstado = await fetch('/api/viaje/' + viajeActualId);
-    const viaje = await responseEstado.json();
-
-    console.log("WATCHER:", viaje);
-
-    if (viaje && viaje.estado === "oferta aceptada") {
-
-      document.getElementById("resultado").innerHTML = `
-        Precio final: $${viaje.precio}<br>
-        Estado: Oferta aceptada<br>
-        Conductor: ${viaje.conductor}
-      `;
-
-      clearInterval(watcher);
-
-    }
-
-  } catch (error) {
-
-    console.log("watch error");
-
-  }
-
-}, 2000);
-const directionsService = new google.maps.DirectionsService();
     const watcher = setInterval(async () => {
 
-  try {
+      try {
 
-    const responseEstado = await fetch('/api/viaje/' + viajeActualId);
-    const viaje = await responseEstado.json();
+        const responseEstado = await fetch('/api/viaje/' + viajeActualId);
+        const viaje = await responseEstado.json();
 
-    console.log("WATCHER:", viaje);
+        console.log("WATCHER:", viaje);
 
-    if (viaje && viaje.estado === "oferta aceptada") {
+        if (viaje && viaje.estado === "oferta aceptada") {
 
-      document.getElementById("resultado").innerHTML = `
-        Precio final: $${viaje.precio}<br>
-        Estado: Oferta aceptada<br>
-        Conductor: ${viaje.conductor}
-      `;
+          document.getElementById("resultado").innerHTML = `
+            Precio final: $${viaje.precio}<br>
+            Estado: Oferta aceptada<br>
+            Conductor: ${viaje.conductor}
+          `;
 
-      clearInterval(watcher);
+          clearInterval(watcher);
 
-    }
+        }
 
-  } catch (error) {
+      } catch (error) {
 
-    console.log("watch error");
+        console.log("watch error");
 
-  }
+      }
 
-}, 2000);
+    }, 2000);
 
     const directionsService = new google.maps.DirectionsService();
 
@@ -215,13 +193,16 @@ const directionsService = new google.maps.DirectionsService();
 
     });
 
-    document.getElementById("resultado").innerHTML =
-      "Precio: $" + data.precio_estimado +
-      "<br>Conductor: " + data.conductor.nombre;
+    document.getElementById("resultado").innerHTML = `
+      Precio: $${data.precio_estimado}<br>
+      Conductor: ${data.conductor.nombre}
+    `;
 
     if (data.precio_estimado >= 50000) {
-      document.getElementById("resultado").innerHTML +=
-        `<br><br><button onclick="negociar()">Negociar viaje</button>`;
+      document.getElementById("resultado").innerHTML += `
+        <br><br>
+        <button onclick="negociar()">Negociar viaje</button>
+      `;
     }
 
   } catch (error) {
@@ -248,8 +229,9 @@ async function negociar() {
     })
   });
 
-  document.getElementById("resultado").innerHTML +=
-    "<br>Oferta enviada: $" + nuevoValor;
+  document.getElementById("resultado").innerHTML += `
+    <br>Oferta enviada: $${nuevoValor}
+  `;
 
 }
 
