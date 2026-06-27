@@ -10,7 +10,8 @@ console.log(
 
 db.serialize(() => {
 
- 
+ db.run("ALTER TABLE viajes ADD COLUMN lat_pasajero REAL", () => {});
+db.run("ALTER TABLE viajes ADD COLUMN lng_pasajero REAL", () => {});
 
   db.run(`
     CREATE TABLE IF NOT EXISTS viajes (
