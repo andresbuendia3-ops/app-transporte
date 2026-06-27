@@ -61,25 +61,12 @@ router.post('/login', (req, res) => {
 
 router.get('/usuarios', (req, res) => {
 
-  db.all(`SELECT * FROM usuarios`, [], (err, rows) => {
+  db.all(
+    `SELECT id, nombre, correo, rol FROM usuarios`,
+    [],
+    (err, rows) => {
 
-    if (err) {
-      return res.status(500).json({
-        error: err.message
-      });
-    }
-
-    res.json(rows);
-
-  });
-
-});
-router.delete('/usuarios/:id', (req, res) => {
-
-  db.run(
-    `DELETE FROM usuarios WHERE id = ?`,
-    [req.params.id],
-    function(err) {
+      console.log("USUARIOS EN BD:", rows);
 
       if (err) {
         return res.status(500).json({
@@ -87,9 +74,7 @@ router.delete('/usuarios/:id', (req, res) => {
         });
       }
 
-      res.json({
-        mensaje: "Usuario eliminado"
-      });
+      res.json(rows);
 
     }
   );
