@@ -18,10 +18,12 @@ router.post('/registro', (req, res) => {
         });
       }
 
-      res.json({
-        mensaje: "Usuario registrado",
-        id: this.lastID
-      });
+     console.log("USUARIO INSERTADO:", this.lastID, nombre, correo, rol);
+
+res.json({
+    mensaje: "Usuario registrado",
+    id: this.lastID
+});
 
     }
   );
