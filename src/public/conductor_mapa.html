@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>Conductor en ruta</title>
+
+<style>
+
+html,
+body{
+
+    margin:0;
+    padding:0;
+    width:100%;
+    height:100%;
+    font-family:Arial,sans-serif;
+
+}
+
+#map{
+
+    width:100%;
+    height:100%;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div id="map"></div>
+
+<script>
+
+let map;
+
+const viajeActualId = localStorage.getItem(
+    "viajeActualId"
+);
+
+let conductorMarker;
+let ultimaPosicion = null;
+let viaje = null;
+let actualizando = false;
+let rutaActual = null;
+let intervaloMapa = null;
+let distanciaAlPasajero = 999999;
+let pasajeroLatLng = null;
+let llegoAlPasajero = false;
+
+let directionsRenderer;
+
+console.log(
+    "VIAJE:",
+    viajeActualId
+);
+
+async function cargarViaje(){
+    
+
+    const response = await fetch(
+        "/api/viaje/" + viajeActualId
+    );
+
+    viaje = await response.json();
+    console.log(viaje);
+    pasajeroLatLng = {
+    lat: Number(viaje.lat_pasajero),
+    lng: Number(viaje.lng_pasajero)
+};
+console.log(
+    "COORDENADAS PASAJERO:",
+    pasajeroLatLng
+);
+
+}
+async function initMap(){
+
+    map = new google.maps.Map(
+        document.getElementById("map"),
+        {
+            zoom:16,
+            center:{
+                lat:4.7110,
+                lng:-74.0721
+            }
+        }
+    );
+    directionsRenderer =
+    new google.maps.DirectionsRenderer();
+
+directionsRenderer.setMap(map);
+const servicioGeocoder =
+    new google.maps.Geocoder();
+    conductorMarker = new google.maps.Marker({
+
+    map: map,
+
+    title: "Conductor"
+
+});
+console.log("WATCHPOSITION INICIADO");
+navigator.geolocation.watchPosition(
+
+function(pos){
+
+    console.log("GPS OK", pos.coords);
+console.log("ENVIANDO:", viaje.conductor_id, pos.coords.latitude, pos.coords.longitude);
+
+    conductorMarker.setPosition({
+
+        lat: pos.coords.latitude,
+        lng: pos.coords.longitude
+
+    });
+     fetch(
+  "/api/gps-conductor/" + viaje.conductor_id,
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      lat: pos.coords.latitude,
+      lng: pos.coords.longitude
+    })
+  }
+);
+console.log("DISTANCIA AL PASAJERO:", google.maps.geometry.spherical.computeDistanceBetween(
+    conductorMarker.getPosition(),
+    pasajeroLatLng
+));
+if (
+    viaje.estado === "aceptado" &&
+    google.maps.geometry.spherical.computeDistanceBetween(
+        conductorMarker.getPosition(),
+        pasajeroLatLng
+    ) < 50
+) {
+
+    fetch(
+        "/api/recoger/" + viaje.id,
+        {
+            method: "POST"
+        }
+    );
+
+}
+console.log("POSICION CONDUCTOR:", pos.coords.latitude, pos.coords.longitude);
+   directionsService.route(
+    {
+        origin: conductorMarker.getPosition(),
+        destination:
+    viaje.estado === "aceptado"
+        ? viaje.origen
+        : viaje.destino,
+        travelMode: "DRIVING"
+    },
+    (result,status)=>{
+
+        if(status==="OK"){
+
+            directionsRenderer.setDirections(result);
+
+        }
+
+    }
+); 
+},
+function(error){
+
+    console.log("ERROR GPS:", error);
+
+},
+{
+    enableHighAccuracy: true,
+    maximumAge: 0,
+    timeout: 10000
+}
+);
+
+ultimaPosicion = conductorMarker.getPosition();
+await cargarViaje();
+
+setInterval(async () => {
+
+    await cargarViaje();
+
+directionsService.route(
+    {
+        origin: conductorMarker.getPosition(),
+        destination:
+            viaje.estado === "aceptado"
+                ? viaje.origen
+                : viaje.destino,
+        travelMode: "DRIVING"
+    },
+    (result, status) => {
+
+        if (status === "OK") {
+
+            directionsRenderer.setDirections(result);
+
+        }
+
+    }
+);
+
+}, 2000);
+const directionsService =
+    new google.maps.DirectionsService();
+
+
+console.log(viaje);
+console.log(
+    "ESTADO:",
+    viaje.estado
+);
+console.log(
+    "ORIGEN DEL VIAJE:",
+    viaje.origen
+);
+console.log(
+    "DESTINO DEL VIAJE:",
+    viaje.destino
+);
+console.log(
+    "DESTINO DEL ROUTE:",
+    viaje.origen
+);
+}
+
+</script>
+
+<script async defer
+src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAGjC1Eo3ldxv1wWBMDMdzkfqUZPL3TDM0&libraries=places&callback=initMap"></script>
+</script>
+</body>
+
+</html>

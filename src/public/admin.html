@@ -93,70 +93,71 @@ async function verViajes() {
           ID: ${viaje.id}<br>
           ${viaje.origen} → ${viaje.destino}<br>
           Precio: ${viaje.precio}<br>
-          Estado: ${viaje.estado}<br>
-          Lat: ${viaje.lat}<br>
-          Lng: ${viaje.lng}
+          Estado: ${viaje.estado}
         </div>
       `;
 
       if (viaje.lat && viaje.lng) {
+
         marker.setPosition({
-          lat: viaje.lat,
-          lng: viaje.lng
+          lat: parseFloat(viaje.lat),
+          lng: parseFloat(viaje.lng)
         });
 
         map.setCenter({
-          lat: viaje.lat,
-          lng: viaje.lng
+          lat: parseFloat(viaje.lat),
+          lng: parseFloat(viaje.lng)
         });
+
       }
 
     });
-let total = 0;
-let pendientes = 0;
-let aceptados = 0;
 
-viajes.forEach(v => {
-  total += v.precio;
+    let total = 0;
+    let pendientes = 0;
+    let aceptados = 0;
 
-  if (v.estado === "pendiente") pendientes++;
-  if (v.estado === "aceptado") aceptados++;
-});
+    viajes.forEach(v => {
 
-document.getElementById("resumen").innerHTML =
-  "Total ingresos: $" + total +
-  "<br>Viajes pendientes: " + pendientes +
-  "<br>Viajes aceptados: " + aceptados;
-  let total = 0;
-let pendientes = 0;
-let aceptados = 0;
+      total += Number(v.precio || 0);
 
-viajes.forEach(v => {
-  total += v.precio;
+      if (v.estado === "pendiente") pendientes++;
+      if (v.estado === "aceptado") aceptados++;
 
-  if (v.estado === "pendiente") pendientes++;
-  if (v.estado === "aceptado") aceptados++;
-});
+    });
 
-document.getElementById("resumen").innerHTML =
-  "Total ingresos: $" + total +
-  "<br>Viajes pendientes: " + pendientes +
-  "<br>Viajes aceptados: " + aceptados;
+    document.getElementById("resumen").innerHTML =
+      "Total ingresos: $" + total +
+      "<br>Viajes pendientes: " + pendientes +
+      "<br>Viajes aceptados: " + aceptados;
 
-document.getElementById("resultado").innerHTML = html;  
-setTimeout(() => {
-  verViajes();
-}, 3000);
+    document.getElementById("resultado").innerHTML = html;
+
   } catch (error) {
 
-    document.getElementById("resultado").innerHTML = "Error cargando viajes";
+    document.getElementById("resultado").innerHTML =
+      "Error cargando viajes";
+
+    console.error(error);
 
   }
 
 }
 
 async function verUsuarios() {
+async function eliminarUsuario(id) {
 
+  if (!confirm("¿Eliminar usuario?")) {
+    return;
+  }
+
+  await fetch('/api/usuarios/' + id, {
+    method: 'DELETE'
+  });
+
+  verUsuarios();
+
+}
   try {
 
     const response = await fetch('/api/usuarios');
@@ -166,13 +167,17 @@ async function verUsuarios() {
 
     usuarios.forEach(u => {
 
-      html += `
-        <div class="bloque">
-          ${u.nombre}<br>
-          ${u.correo}<br>
-          Rol: ${u.rol}
-        </div>
-      `;
+    html += `
+  <div class="bloque">
+    ${u.nombre}<br>
+    ${u.correo}<br>
+    Rol: ${u.rol}<br><br>
+
+    <button onclick="eliminarUsuario(${u.id})">
+      Eliminar
+    </button>
+  </div>
+`; 
 
     });
 

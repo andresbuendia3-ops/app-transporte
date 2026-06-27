@@ -1,146 +1,590 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-  <title>Panel Conductor</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial;
-      background: #f4f6f8;
-      padding: 20px;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    h2 {
-      font-size: 28px;
-      margin-bottom: 20px;
-    }
+<title>Panel Conductor</title>
 
-    button {
-      width: 100%;
-      padding: 12px;
-      margin-top: 10px;
-      border: none;
-      border-radius: 10px;
-      background: black;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-    }
+<style>
 
-    .viaje {
-      background: white;
-      padding: 18px;
-      margin-bottom: 18px;
-      border-radius: 14px;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-    }
+body{
+  margin:0;
+  padding:20px;
+  font-family:Arial, sans-serif;
+  background:#f4f6f8;
+}
 
-    .dato {
-      margin-bottom: 8px;
-    }
-  </style>
+h2{
+  margin-bottom:20px;
+}
+
+#gpsEstado{
+  background:white;
+  padding:15px;
+  border-radius:12px;
+  margin-bottom:15px;
+  box-shadow:0 4px 10px rgba(0,0,0,.08);
+}
+
+button{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border:none;
+  border-radius:10px;
+  background:black;
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.viaje{
+  background:white;
+  padding:18px;
+  margin-top:15px;
+  border-radius:14px;
+  box-shadow:0 6px 18px rgba(0,0,0,.08);
+}
+
+.dato{
+  margin-bottom:8px;
+}
+
+h3{
+  margin-top:30px;
+}
+
+</style>
+
 </head>
+
 <body>
 
-<h2>Panel Conductor</h2>
+<div style="
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:20px;
+">
 
-<button onclick="verViajes()">Actualizar viajes</button>
+  <h2 style="margin:0;">
+    Panel Conductor
+  </h2>
+
+  <button
+    onclick="cerrarSesion()"
+    style="
+      width:auto;
+      margin:0;
+      padding:10px 15px;
+    ">
+    Salir
+  </button>
+
+</div>
+
+<div id="gpsEstado">
+GPS no iniciado
+</div>
+
+<button onclick="verViajes()">
+Actualizar ahora
+</button>
 
 <div id="resultado"></div>
 
+<div style="margin-top:30px;">
+
+  <button onclick="mostrarActivos()">
+    VIAJES ACTIVOS
+  </button>
+
+  <button onclick="mostrarHistorial()">
+    HISTORIAL
+  </button>
+
+</div>
+
+<div id="historialConductor" style="display:none;"></div>
+
 <script>
+
+const usuario = JSON.parse(
+  localStorage.getItem("usuario") || "null"
+);
+
+console.log(
+  "CONDUCTOR LOGUEADO:",
+  usuario
+);
+
+let gpsInterval = null;
 
 async function verViajes() {
 
-  const response = await fetch('/api/viajes');
-  const viajes = await response.json();
+  try {
 
-  let html = "";
+    const response = await fetch(
+      '/api/viajes'
+    );
 
-  viajes.reverse().forEach(v => {
+    const viajes = await response.json();
 
-    html += `
-      <div class="viaje">
+    let html = "";
 
-        <div class="dato"><b>Viaje ID ${v.id}</b></div>
-        <div class="dato">Origen: ${v.origen}</div>
-        <div class="dato">Destino: ${v.destino}</div>
-        <div class="dato">Precio: $${v.precio}</div>
-        <div class="dato">Estado: ${v.estado}</div>
-        <div class="dato">Oferta: ${v.oferta ? "$" + v.oferta : "Sin oferta"}</div>
-    `;
+    [...viajes]
+  .reverse()
+  .forEach(v => {
 
-    if (v.estado === "pendiente") {
-
-      html += `
-        <button onclick="aceptar(${v.id})">Aceptar viaje</button>
-      `;
-
+    if (
+      v.conductor_id &&
+      v.conductor_id != usuario.id
+    ) {
+      return;
     }
 
-    if (v.oferta) {
+      if(
+  v.estado === "finalizado" ||
+  (
+    v.conductor_id &&
+    v.conductor_id != usuario.id
+  )
+){
+  return;
+}
 
       html += `
-        <button onclick="aceptarOferta(${v.id})">Aceptar oferta</button>
+        <div class="viaje">
+
+          <div class="dato">
+            <b>Viaje ID:</b> ${v.id}
+          </div>
+
+          <div class="dato">
+            <b>Origen:</b> ${v.origen}
+          </div>
+
+          <div class="dato">
+            <b>Destino:</b> ${v.destino}
+          </div>
+
+          <div class="dato">
+            <b>Precio:</b> $${v.precio}
+          </div>
+
+          <div class="dato">
+            <b>Estado:</b> ${v.estado}
+          </div>
       `;
 
-    }
+      if(v.estado === "pendiente"){
 
-    html += `</div>`;
+        html += `
+          <button onclick="aceptar(${v.id})">
+            Aceptar viaje
+          </button>
+        `;
 
-  });
+      }
 
-  document.getElementById("resultado").innerHTML = html;
+      if(
+  v.estado === "aceptado" &&
+  v.conductor_id == usuario.id
+){
+
+  html += `
+    <button onclick="recoger(${v.id})">
+      Recoger pasajero
+    </button>
+  `;
 
 }
 
-async function aceptar(id) {
+if(
+  v.estado === "recogido" &&
+  v.conductor_id == usuario.id
+){
 
-  await fetch('/api/aceptar/' + id, {
-    method: 'POST'
-  });
+  html += `
+    <button onclick="finalizar(${v.id})">
+      Finalizar viaje
+    </button>
+  `;
 
-  let lat = 4.7110;
-  let lng = -74.0721;
+}
+      html += `
+        </div>
+      `;
 
-  const mover = setInterval(async () => {
-
-    lat += 0.01;
-    lng += 0.01;
-
-    console.log("MOVIENDO:", lat, lng);
-
-    await fetch('/api/posicion/' + id, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        lat: lat,
-        lng: lng
-      })
     });
 
-  }, 3000);
+    console.log(
+  "VIAJES CARGADOS:",
+  viajes.length
+);
 
-  alert("Viaje aceptado");
-  verViajes();
+console.log(
+  "HTML:",
+  html
+);
+    document.getElementById(
+      "resultado"
+    ).innerHTML = html;
+
+  }
+  catch(error){
+
+    console.error(error);
+
+  }
 
 }
 
-async function aceptarOferta(id) {
+async function aceptar(id){
 
-  await fetch('/api/aceptar/' + id, {
-    method: 'POST'
-  });
+ localStorage.setItem("viajeActualId", id);
 
-  alert("Oferta aceptada");
+console.log("ID VIAJE GUARDADO:", id);
 
-  verViajes();
+alert("ACEPTAR EJECUTADA");
+  try{
+await fetch(
+  '/api/aceptar/' + id,
+  {
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json'
+    },
+    body:JSON.stringify({
+      conductor_id: usuario.id,
+      conductor_nombre: usuario.nombre
+    })
+  }
+);
+
+
+localStorage.setItem("viajeActualId", id);
+
+window.location.href =
+"/conductor_mapa.html";
+    document.getElementById(
+      "gpsEstado"
+    ).innerHTML =
+      "Solicitando permiso GPS...";
+
+    navigator.geolocation.getCurrentPosition(
+
+      async function(posicion){
+
+        document.getElementById(
+          "gpsEstado"
+        ).innerHTML =
+          "GPS ACTIVO<br>" +
+          posicion.coords.latitude +
+          "<br>" +
+          posicion.coords.longitude;
+
+        await fetch(
+          '/api/posicion/' + id,
+          console.log(
+ 
+          {
+            method:'POST',
+            headers:{
+              'Content-Type':'application/json'
+            },
+            body:JSON.stringify({
+              lat: posicion.coords.latitude,
+              lng: posicion.coords.longitude
+            })
+          }
+        ));
+
+        await fetch(
+          '/api/gps-conductor/' + usuario.id,
+          {
+            method:'POST',
+            headers:{
+              'Content-Type':'application/json'
+            },
+            body:JSON.stringify({
+              lat: posicion.coords.latitude,
+              lng: posicion.coords.longitude
+            })
+          }
+        );
+
+        if(gpsInterval){
+          clearInterval(gpsInterval);
+        }
+
+        gpsInterval = setInterval(() => {
+
+          navigator.geolocation.getCurrentPosition(
+
+            async function(pos){
+              console.log("INTERVAL GPS EJECUTANDO");
+         await fetch(
+  '/api/posicion/' + id,
+  {
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json'
+    },
+    body:JSON.stringify({
+      lat: pos.coords.latitude,
+      lng: pos.coords.longitude
+    })
+  }
+);
+console.log(
+  "POSICION VIAJE ENVIADA",
+  id,
+  pos.coords.latitude,
+  pos.coords.longitude
+);
+
+await fetch(
+  '/api/gps-conductor/' + usuario.id,
+  {
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json'
+    },
+    body:JSON.stringify({
+      lat: pos.coords.latitude,
+      lng: pos.coords.longitude
+    })
+  }
+);     
+
+console.log(
+  "GPS CONDUCTOR ENVIADO",
+  usuario.id,
+  pos.coords.latitude,
+  pos.coords.longitude
+);
+           
+
+            }
+,
+function(error){
+  console.log("ERROR INTERVAL GPS", error);
+},
+{
+  enableHighAccuracy:true,
+  timeout:15000,
+  maximumAge:0
+}
+
+          );
+
+        }, 5000);
+
+      },
+
+      function(error){
+
+        document.getElementById(
+          "gpsEstado"
+        ).innerHTML =
+          "ERROR GPS: " + error.message;
+
+      },
+
+      {
+        enableHighAccuracy:true,
+        timeout:15000,
+        maximumAge:0
+      }
+
+    );
+
+   alert("Viaje aceptado");
+
+localStorage.setItem("viajeActualId", id);
+
+alert(
+  "ID GUARDADO: " +
+  localStorage.getItem("viajeActualId")
+);
+
+window.location.href =
+"/conductor_mapa.html";
+
+  }
+  catch(error){
+
+    console.error(error);
+
+  }
+
+}
+async function recoger(id){
+
+  try{
+
+    await fetch(
+      '/api/recoger/' + id,
+      {
+        method:'POST'
+      }
+    );
+
+    alert(
+      "Pasajero recogido"
+    );
+
+    verViajes();
+
+  }
+  catch(error){
+
+    console.error(error);
+
+  }
 
 }
 
+async function finalizar(id){
+
+  try{
+
+
+
+    await fetch(
+      '/api/finalizar/' + id,
+      {
+        method:'POST'
+      }
+    );
+
+    alert(
+      "Viaje finalizado"
+    );
+
+    verViajes();
+
+    cargarHistorialConductor();
+
+  }
+  catch(error){
+
+    console.error(error);
+
+  }
+
+}
+
+async function cargarHistorialConductor(){
+
+  try{
+
+    if(!usuario){
+      return;
+    }
+
+    const response = await fetch(
+      '/api/historial-conductor/' +
+      usuario.id
+    );
+
+    const viajes = await response.json();
+
+    let html = "";
+
+    viajes.forEach(v => {
+
+      html += `
+        <div class="viaje">
+
+          <div class="dato">
+            <b>Origen:</b> ${v.origen}
+          </div>
+
+          <div class="dato">
+            <b>Destino:</b> ${v.destino}
+          </div>
+
+          <div class="dato">
+            <b>Precio:</b> $${v.precio}
+          </div>
+
+          <div class="dato">
+            <b>Estado:</b> ${v.estado}
+          </div>
+
+          <div class="dato">
+            <b>Fecha aceptación:</b>
+            ${v.fecha_aceptacion || '-'}
+          </div>
+
+          <div class="dato">
+            <b>Fecha finalización:</b>
+            ${v.fecha_finalizacion || '-'}
+          </div>
+
+        </div>
+      `;
+
+    });
+
+    document.getElementById(
+      "historialConductor"
+    ).innerHTML = html;
+
+  }
+  catch(error){
+
+    console.error(
+      "ERROR HISTORIAL",
+      error
+    );
+
+  }
+
+}
+function mostrarActivos(){
+
+  document.getElementById(
+    "resultado"
+  ).style.display = "block";
+
+  document.getElementById(
+    "historialConductor"
+  ).style.display = "none";
+
+}
+
+function mostrarHistorial(){
+
+  document.getElementById(
+    "resultado"
+  ).style.display = "none";
+
+  document.getElementById(
+    "historialConductor"
+  ).style.display = "block";
+
+}
+setInterval(() => {
+
+  verViajes();
+
+}, 5000);
+function cerrarSesion(){
+
+  localStorage.removeItem("usuario");
+  localStorage.removeItem("viajeActualId");
+
+  window.location.href =
+    "/login.html";
+
+}
 verViajes();
+cargarHistorialConductor();
+mostrarActivos();
 
 </script>
 

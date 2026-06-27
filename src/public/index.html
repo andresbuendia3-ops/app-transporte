@@ -51,6 +51,9 @@
       font-size: 14px;
       font-weight: bold;
     }
+   .pac-container {
+  z-index: 99999 !important;
+} 
   </style>
 </head>
 <body>
@@ -59,8 +62,8 @@
 
   <h2>Solicitar viaje</h2>
 
-  <input id="origenTexto" value="4.7110,-74.0721">
-  <input id="destinoTexto" value="5.5353,-73.3678">
+ <input id="origenTexto" placeholder="¿Dónde te recogemos?">
+<input id="destinoTexto" placeholder="¿A dónde vas?">
 
   <select id="vehiculo">
     <option value="carro">Carro</option>
@@ -71,6 +74,9 @@
   <button onclick="pedirViaje()">Pedir viaje</button>
 
   <div id="resultado"></div>
+<h3>Mis viajes</h3>
+
+<div id="historial"></div>
 
 </div>
 
@@ -83,7 +89,13 @@ console.log("SCRIPT CARGADO");
 let map;
 let directionsRenderer;
 let viajeActualId = localStorage.getItem("viajeActualId");
-
+console.log(
+  "LOCALSTORAGE DESPUES:",
+  localStorage.getItem("viajeActualId")
+);
+let conductorMarker;
+let origenActual = "";
+let destinoActual = "";
 function initMap() {
 
   map = new google.maps.Map(document.getElementById("map"), {
@@ -94,56 +106,124 @@ function initMap() {
   directionsRenderer = new google.maps.DirectionsRenderer();
   directionsRenderer.setMap(map);
 
-}
+  conductorMarker = new google.maps.Marker({
+    position: { lat: 4.7110, lng: -74.0721 },
+    map: map,
+    title: "Conductor",
+    icon: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+  });
+ const origenInput = document.getElementById("origenTexto");
+const destinoInput = document.getElementById("destinoTexto");
 
+const origenAutocomplete = new google.maps.places.Autocomplete(origenInput);
+const destinoAutocomplete = new google.maps.places.Autocomplete(destinoInput);
+
+new google.maps.places.Autocomplete(destinoInput, {
+  componentRestrictions: { country: "co" }
+});
+setInterval(actualizarConductor, 3000);
+}
+async function dibujarRuta(origen, destino){
+
+  const directionsService =
+    new google.maps.DirectionsService();
+
+  directionsService.route(
+    {
+      origin: origen,
+      destination: destino,
+      travelMode: "DRIVING"
+    },
+    (result, status) => {
+
+      if(status === "OK"){
+
+        directionsRenderer.setDirections(result);
+
+      }
+
+    }
+  );
+
+}
 async function pedirViaje() {
 
   const origen = document.getElementById("origenTexto").value.trim();
   const destino = document.getElementById("destinoTexto").value.trim();
+  origenActual = origen;
+destinoActual = destino;
   const tipoVehiculo = document.getElementById("vehiculo").value;
 
   try {
 
+console.log("ENTRO A PEDIR VIAJE");
     const response = await fetch('/api/distancia', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        origen,
-        destino,
-        tipoVehiculo
-      })
+     
+     body: JSON.stringify({
+    origen,
+    destino,
+    tipoVehiculo,
+    lat_pasajero: map.getCenter().lat(),
+    lng_pasajero: map.getCenter().lng()
+}) 
     });
 
     const data = await response.json();
+console.log("DISTANCIA OK", data);
 
-    const viajeResponse = await fetch('/api/viajes', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        origen,
-        destino,
-        precio: data.precio_estimado,
-        conductor: data.conductor.nombre,
-        vehiculo: data.conductor.tipoVehiculo
-      })
-    });
+const usuario = JSON.parse(
+  localStorage.getItem("usuario")
+);
+ const viajeResponse = await fetch('/api/viajes', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    origen,
+    destino,
+    precio: data.precio_estimado,
+    vehiculo: data.conductor.tipoVehiculo,
+    pasajero_id: usuario.id,
+    lat_pasajero: map.getCenter().lat(),
+    lng_pasajero: map.getCenter().lng()
+  })
+});
 
-    const viajeGuardado = await viajeResponse.json();
+    console.log("STATUS VIAJE:", viajeResponse.status);
+
+   const viajeGuardado = await viajeResponse.json();
+
+console.log("RESPUESTA VIAJE:", viajeGuardado); 
 
 viajeActualId = viajeGuardado.id;
 localStorage.setItem("viajeActualId", viajeGuardado.id);
 console.log("ID GUARDADO:", viajeGuardado.id);
    
-    document.getElementById("resultado").innerHTML = `
-      <div id="precioBox">
-        Precio: $${data.precio_estimado}<br>
-        Conductor: ${data.conductor.nombre}
-      </div>
-    `;
+   document.getElementById("resultado").innerHTML = `
+  <div id="precioBox">
+
+    <b>Precio:</b> $${data.precio_estimado}
+    <br><br>
+
+    <b>Conductor asignado:</b>
+    ${viajeGuardado.conductor}
+    <br>
+
+    <b>ID Conductor:</b>
+    ${viajeGuardado.conductor_id}
+    <br><br>
+
+    <b>Estado:</b>
+    🚗 Conductor en camino
+
+  </div>
+`; 
+    
 
     if (data.precio_estimado >= 50000) {
       document.getElementById("resultado").innerHTML += `
@@ -163,13 +243,20 @@ console.log("ID GUARDADO:", viajeGuardado.id);
         directionsRenderer.setDirections(result);
       }
 
-    });
+    }); /* ... */
 
+/*
+
+directionsRenderer.set('directions', null);
+*/
   } catch (error) {
 
-    document.getElementById("resultado").innerHTML = "Error backend";
+  console.error("ERROR PEDIR VIAJE:", error);
 
-  }
+  document.getElementById("resultado").innerHTML =
+    "Error backend: " + error.message;
+
+}
 
 }
 
@@ -194,6 +281,50 @@ async function negociar() {
   `;
 
 }
+async function actualizarConductor() {
+
+  const viajeId = localStorage.getItem(
+    "viajeActualId"
+  );
+
+  if (!viajeId) return;
+
+  const viajeResponse = await fetch(
+    '/api/viajes'
+  );
+
+  const viajes = await viajeResponse.json();
+
+  const viaje = viajes.find(
+    v => v.id == viajeId
+  );
+
+  if (!viaje) return;
+
+  if (!viaje.conductor_id) return;
+
+  const gpsResponse = await fetch(
+    '/api/gps-conductor/' +
+    viaje.conductor_id
+  );
+
+  const gps = await gpsResponse.json();
+
+  if (!gps) return;
+
+  if (!gps.lat || !gps.lng) return;
+
+  conductorMarker.setPosition({
+  lat: parseFloat(gps.lat),
+  lng: parseFloat(gps.lng)
+});
+map.panTo({
+  lat: parseFloat(gps.lat),
+  lng: parseFloat(gps.lng)
+});
+}
+
+
 
 setInterval(async () => {
 
@@ -208,7 +339,16 @@ setInterval(async () => {
 
     console.log("WATCHER:", viaje);
 
-    if (viaje && viaje.estado === "aceptado") {
+    if (
+  viaje &&
+  (
+    viaje.estado === "aceptado" ||
+    viaje.estado === "recogido" ||
+    viaje.estado === "finalizado"
+  )
+) {
+
+  
 
   document.getElementById("resultado").innerHTML = `
     <div style="
@@ -219,16 +359,64 @@ setInterval(async () => {
       margin-top:20px;
     ">
       <b>Precio final:</b> $${viaje.precio}<br>
-      <b>Estado:</b> Viaje aceptado<br>
+      <b>Estado:</b> ${
+  viaje.estado === "aceptado"
+    ? "🚗 Conductor en camino"
+    : viaje.estado === "recogido"
+    ? "👤 Pasajero recogido"
+    : "✅ Viaje finalizado"
+}<br>
       <b>Conductor:</b> ${viaje.conductor}
+      <br><b>ID Conductor:</b> ${viaje.conductor_id}
     </div>
   `;
+console.log(
+  "POSICION CONDUCTOR:",
+  viaje.lat,
+  viaje.lng
+);
+if (viaje.lat && viaje.lng) {
 
+  const posicion = {
+    lat: Number(viaje.lat),
+    lng: Number(viaje.lng)
+  };
+
+  if (viaje.estado === "aceptado") {
+
+  await dibujarRuta(
+    posicion,
+    origenActual
+  );
+}
+if (viaje.estado === "recogido") {
+
+  await dibujarRuta(
+    posicion,
+    viaje.destino
+  );
+
+}
+  if (!conductorMarker) {
+
+    conductorMarker = new google.maps.Marker({
+      position: posicion,
+      map: map,
+      title: "Conductor"
+    });
+
+  } else {
+
+    conductorMarker.setPosition(posicion);
+
+  }
+
+}
 }
 
   } catch (error) {
 
-    console.log("watch error");
+   console.log("watch error", error);
 
   }
 
@@ -236,8 +424,54 @@ setInterval(async () => {
 
 </script>
 
+<script>
+
+async function cargarHistorial() {
+
+  const usuario = JSON.parse(
+    localStorage.getItem("usuario")
+  );
+
+  if (!usuario) return;
+
+  const response = await fetch(
+    '/api/historial/' + usuario.id
+  );
+
+  const viajes = await response.json();
+
+  let html = "";
+
+  viajes.forEach(v => {
+
+    html += `
+      <div style="
+        background:white;
+        margin:10px 0;
+        padding:10px;
+        border-radius:10px;
+      ">
+        <b>${v.origen}</b><br>
+        ${v.destino}<br>
+        $${v.precio}<br>
+        Estado: ${v.estado}
+      </div>
+    `;
+
+  });
+
+  document.getElementById(
+    "historial"
+  ).innerHTML = html;
+
+}
+
+cargarHistorial();
+
+</script>
+
 <script async defer
-src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAGjC1Eo3ldxv1wWBMDMdzkfqUZPL3TDM0&callback=initMap">
+src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAGjC1Eo3ldxv1wWBMDMdzkfqUZPL3TDM0&libraries=places&callback=initMap">
 </script>
 
 </body>

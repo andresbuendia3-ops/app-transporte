@@ -1,13 +1,19 @@
 const sqlite3 = require('sqlite3').verbose();
 
-const db = new sqlite3.Database('./viajes.db');
+const path = require('path');
+const db = new sqlite3.Database(
+  path.join(__dirname, '../../viajes.db')
+);
+console.log(
+  path.join(__dirname, '../../viajes.db')
+);
 
 db.serialize(() => {
 
-  db.run(`DROP TABLE IF EXISTS viajes`);
+ 
 
   db.run(`
-    CREATE TABLE viajes (
+    CREATE TABLE IF NOT EXISTS viajes (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       origen TEXT,
       destino TEXT,
@@ -31,6 +37,13 @@ db.serialize(() => {
     )
   `);
 
+  db.run(`ALTER TABLE viajes ADD COLUMN pasajero_id INTEGER`, () => {});
+db.run(`ALTER TABLE viajes ADD COLUMN conductor_id INTEGER`, () => {});
+db.run(`ALTER TABLE viajes ADD COLUMN fecha_creacion TEXT`, () => {});
+db.run(`ALTER TABLE viajes ADD COLUMN fecha_aceptacion TEXT`, () => {});
+db.run(`ALTER TABLE viajes ADD COLUMN fecha_finalizacion TEXT`, () => {});
+db.run(`ALTER TABLE usuarios ADD COLUMN lat REAL`, () => {});
+db.run(`ALTER TABLE usuarios ADD COLUMN lng REAL`, () => {});
 });
 
 module.exports = db;

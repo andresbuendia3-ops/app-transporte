@@ -111,6 +111,15 @@ async function login() {
 
     if (data.usuario) {
 
+localStorage.setItem(
+  "usuario",
+  JSON.stringify(data.usuario)
+);
+console.log(
+  "USUARIO GUARDADO:",
+  localStorage.getItem("usuario")
+);
+
       if (data.usuario.rol === "pasajero") {
         window.location.href = "/index.html";
       }
