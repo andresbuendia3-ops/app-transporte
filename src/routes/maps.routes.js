@@ -108,10 +108,14 @@ conductor_id,
         function(err) {
 
           if (err) {
-            return res.status(500).json({
-              error: err.message
-            });
-          }
+
+    console.error("ERROR INSERT VIAJE:", err);
+
+    return res.status(500).json({
+        error: err.message
+    });
+
+}
 
           res.json({
             id: this.lastID,
